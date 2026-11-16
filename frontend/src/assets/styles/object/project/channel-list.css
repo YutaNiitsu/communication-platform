@@ -1,0 +1,79 @@
+/* ================================
+   Slack ダークモード風：チャンネル一覧
+   ================================ */
+
+/* チャンネル一覧画面 */
+.channel-list__container {
+  max-width: 700px;
+  margin: 40px auto;
+  font-family: "Segoe UI", sans-serif;
+  color: #e8e8e8; /* ダークモード用文字色 */
+}
+
+/* 上部メニュー */
+.channel-list__header-menu {
+  display: flex;
+  gap: 10px;
+  margin-bottom: 20px;
+}
+
+/* チャンネル一覧 */
+.channel-list__list {
+  list-style: none;
+  padding: 0;
+  margin-top: 20px;
+}
+
+/* チャンネルカード（Slack風） */
+.channel-list__item {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 16px;
+
+  border: 1px solid #3a3d41; /* ダークモード用枠線 */
+  border-radius: 8px;
+  margin-bottom: 12px;
+  cursor: pointer;
+
+  transition: background 0.2s, box-shadow 0.2s;
+}
+
+.channel-list__item:hover {
+  background: #2c2f33; /* Slack風のホバー色 */
+  box-shadow: 0 2px 4px rgba(0,0,0,0.4);
+}
+
+/* アイコン（頭文字） */
+.channel-list__icon {
+  width: 40px;
+  height: 40px;
+  background: #3a3d41; /* Slackダークのアイコン背景 */
+  border-radius: 6px;
+
+  display: flex;
+  align-items: center;
+  justify-content: center;
+
+  font-weight: bold;
+  font-size: 18px;
+  color: #ffffff; /* 白文字 */
+}
+
+/* チャンネル情報 */
+.channel-list__info {
+  display: flex;
+  flex-direction: column;
+}
+
+.channel-list__name {
+  font-weight: bold;
+  font-size: 16px;
+  margin-bottom: 4px;
+  color: #ffffff;
+}
+
+.channel-list__created {
+  font-size: 12px;
+  color: #b5b5b5; /* Slack風の薄いグレー */
+}

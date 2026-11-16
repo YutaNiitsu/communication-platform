@@ -1,0 +1,102 @@
+spring:
+  # profiles:
+  #   active: prod
+
+  datasource:
+    url: jdbc:postgresql://postgres:5432/chatdb
+    username: chatuser
+    password: chatpass
+    driver-class-name: org.postgresql.Driver
+
+  servlet:
+    multipart:
+      max-file-size: 30MB
+      max-request-size: 150MB
+
+  jpa:
+    enabled: false
+    hibernate:
+      ddl-auto: update
+    properties:
+      hibernate:
+        format-sql: true
+        show-sql: true
+
+server:
+  tomcat:
+    max-http-form-post-size: -1
+
+application:
+  name: app
+
+jwt:
+  secret: ${JWT_SECRET}
+
+mybatis:
+  mapper-locations: classpath:mapper/**/*.xml
+
+logging:
+  level:
+    root: INFO
+    com.example.app: DEBUG
+
+app-properties:
+  message:
+    max-length: 5000
+    page-range: 6
+  attachment:
+    base-dir: "/data/app-storage/attachments"
+    allowed-extensions:
+      - pdf
+      - docx
+      - xlsx
+      - pptx
+      - txt
+      - md
+      - jpg
+      - jpeg
+      - png
+      - gif
+      - webp
+      - zip
+      - tar.gz
+
+    allowed-mime-types:
+      - application/pdf
+      - application/vnd.openxmlformats-officedocument.wordprocessingml.document
+      - application/vnd.openxmlformats-officedocument.spreadsheetml.sheet
+      - application/vnd.openxmlformats-officedocument.presentationml.presentation
+      - application/gzip
+      - application/x-gzip
+      - application/octet-stream
+      - application/x-zip-compressed
+      - application/x-tar
+      - text/plain
+      - text/markdown
+      - image/jpg
+      - image/x-jpg
+      - image/jpeg
+      - image/x-jpeg
+      - image/png
+      - image/gif
+      - image/x-gif
+      - image/webp
+      - image/x-webp
+    max-file-count: 10
+    max-file-size-mb: 30
+    max-total-size-mb: 150
+    thumbnail:
+      enabled: true
+      max-width: 200
+      max-height: 200
+      format: "jpeg"
+      max-size-kb: 200
+    filename:
+      random-length: 12
+      prefix-timestamp: true
+      charset: "BASE62"
+  storage:
+    total-bytes: 5368709120 # 5GB
+    warn-threshold-percent: 85
+    delete-threshold-percent: 95
+    # force-delete-percent: 90

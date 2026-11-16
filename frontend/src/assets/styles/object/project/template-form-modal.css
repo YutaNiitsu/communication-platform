@@ -1,0 +1,94 @@
+/* ================================
+   3. テンプレート作成 / 編集 / 閲覧モーダル
+   ================================ */
+/* モーダルカードの基本設定（パディングを維持） */
+.template-form-modal {
+  background: #222529;
+  border: 1px solid #3f444d;
+  border-radius: 8px;
+  width: 560px;
+  max-width: 90vw;
+  box-shadow: 0 12px 32px rgba(0, 0, 0, 0.6);
+  padding: 24px;
+}
+
+.form-group {
+  margin-bottom: 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.form-group label {
+  font-size: 12px;
+  font-weight: bold;
+  color: #ab9ba8;
+}
+
+.radio-group {
+  display: flex;
+  gap: 16px;
+  font-size: 13px;
+  align-items: center;
+}
+
+.form-group input[type="text"],
+.form-group select,
+.form-group textarea {
+  background: #1a1d21;
+  border: 1px solid #3f444d;
+  border-radius: 4px;
+  padding: 8px 12px;
+  color: #ffffff;
+  font-size: 13px;
+  box-sizing: border-box;
+}
+
+.form-group textarea {
+  min-height: 140px;
+  resize: vertical;
+  line-height: 1.5;
+}
+
+.form-group input:disabled,
+.form-group select:disabled,
+.form-group textarea:disabled {
+  background: #16181c;
+  color: #888888;
+  cursor: not-allowed;
+}
+
+.char-count-row {
+  display: flex;
+  justify-content: space-between;
+  font-size: 11px;
+  color: #ab9ba8;
+  margin-top: 4px;
+}
+
+/* フッター本体の調整 */
+.modal-footer {
+  border-top: 1px solid #3f444d !important;
+  padding-top: 16px !important;
+  margin-top: 24px !important;
+  margin-bottom: 0 !important;
+}
+
+/* 2ボタンを左右に引き離すコンテナ */
+.footer-actions-container {
+  display: flex !important;
+  justify-content: space-between !important;
+  align-items: center !important;
+  width: 100% !important;
+}
+
+/* ボタンが親の端（入力欄のライン）にピタッとくっつくようにする調整 */
+.footer-actions-container .btn {
+  /* もしボタンに固有の余白や固定幅があればここでリセット・調整 */
+  margin: 0 !important;
+}
+
+/* 閲覧モードなどでボタンが1つだけの場合に右側に寄せる用 */
+.footer-btn-right {
+  margin-left: auto !important;
+}

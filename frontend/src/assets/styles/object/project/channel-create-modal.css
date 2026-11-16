@@ -1,0 +1,149 @@
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+  padding: 16px;
+  box-sizing: border-box;
+}
+
+/* モーダルカード本体 */
+.modal-card {
+  width: 100%;
+  max-width: 640px;
+  background-color: #1e293b;
+  border: 1px solid #334155;
+  border-radius: 10px;
+  padding: 32px;
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.5), 0 8px 10px -6px rgba(0, 0, 0, 0.5);
+  box-sizing: border-box;
+}
+
+.modal-title {
+  font-size: 1.5rem;
+  font-weight: bold;
+  margin-bottom: 24px;
+  color: #f8fafc;
+}
+
+.form-group {
+  margin-bottom: 22px;
+}
+
+.form-label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 8px;
+  color: #cbd5e1;
+}
+
+.form-input {
+  width: 100%;
+  padding: 12px 14px;
+  background-color: #0f172a;
+  border: 1px solid #475569;
+  border-radius: 6px;
+  font-size: 1.0rem;
+  color: #f8fafc;
+  box-sizing: border-box;
+  transition: border-color 0.2s, box-shadow 0.2s;
+}
+
+.form-input::placeholder {
+  color: #64748b;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: #3b82f6;
+  box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.25);
+}
+
+/* 参加ユーザー選択用のスクロールボックス */
+.user-list-box {
+  width: 100%;
+  max-height: 240px;
+  overflow-y: auto;
+  padding: 12px 14px;
+  border: 1px solid #475569;
+  border-radius: 6px;
+  background-color: #0f172a;
+  box-sizing: border-box;
+}
+
+.user-item {
+  margin-bottom: 10px;
+}
+
+.user-item:last-child {
+  margin-bottom: 0;
+}
+
+/* チェックボックスのラベル行（崩れ防止のフレックス配置） */
+.checkbox-label {
+  display: flex;
+  align-items: center;
+  cursor: pointer;
+  color: #cbd5e1;
+  font-weight: normal;
+}
+
+.checkbox-input {
+  margin: 0;
+  margin-right: 10px;
+  cursor: pointer;
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
+}
+
+.checkbox-label-text {
+  text-align: left;
+}
+
+/* ボタン配置エリア */
+.modal-actions {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 32px;
+  padding-top: 20px;
+  border-top: 1px solid #334155;
+}
+
+.btn-secondary {
+  background-color: #334155;
+  color: #cbd5e1;
+  padding: 10px 24px;
+  border-radius: 6px;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.btn-secondary:hover {
+  background-color: #475569;
+  color: #f8fafc;
+}
+
+.btn-primary {
+  background-color: #2563eb;
+  color: #ffffff;
+  padding: 10px 28px;
+  border-radius: 6px;
+  border: none;
+  font-weight: 600;
+  cursor: pointer;
+  transition: background-color 0.2s;
+}
+
+.btn-primary:hover {
+  background-color: #1d4ed8;
+}

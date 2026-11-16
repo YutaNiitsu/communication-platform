@@ -1,0 +1,182 @@
+/* ================================
+   Slack ダークモード風：検索画面
+   ================================ */
+
+/* 全体レイアウト（2カラム構成） */
+.search-layout {
+  display: flex;
+  height: 100vh; /* 画面の高さいっぱいに固定 */
+  width: 100%;
+  background-color: #1a1d21; /* チャット欄等と共通のSlack標準ダーク背景 */
+  overflow: hidden;
+  box-sizing: border-box;
+}
+
+/* 左側：検索条件サイドバー（スクロール時に固定） */
+.search-sidebar {
+  width: 320px;
+  height: 100%;
+  background-color: #221f26;
+  border-right: 1px solid #3f3843;
+  padding: 20px;
+  overflow-y: auto; /* 条件項目が多い場合はサイドバー内だけでスクロール */
+  flex-shrink: 0;
+  color: #e8e8e8;
+  position: sticky;
+  top: 0;
+  box-sizing: border-box;
+}
+
+.search-sidebar h2 {
+  font-size: 16px;
+  font-weight: bold;
+  color: #ffffff;
+  margin-top: 0;
+  margin-bottom: 16px;
+}
+
+/* 検索フォーム */
+.search__form {
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+
+/* 各入力フィールドのグループ */
+.search-field {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+
+.search-field label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #c0c0c0;
+}
+
+/* 入力欄（テキスト、日付など） */
+.search-sidebar input[type="text"],
+.search-sidebar input[type="date"],
+.search-sidebar select {
+  width: 100%;
+  padding: 10px;
+  background: #1a1d21;
+  color: #ffffff;
+  border: 1px solid #3f3843;
+  border-radius: 6px;
+  box-sizing: border-box;
+  font-family: inherit;
+  font-size: 14px;
+}
+
+.search-sidebar input:focus {
+  outline: none;
+  border-color: #1164A3;
+}
+
+/* 検索ボタン */
+.search-sidebar .btn--primary {
+  width: 100%;
+  background-color: #007a5a;
+  border: none;
+  color: #ffffff;
+  padding: 10px;
+  border-radius: 6px;
+  font-weight: bold;
+  cursor: pointer;
+  margin-top: 8px;
+  transition: background-color 0.2s;
+}
+
+.search-sidebar .btn--primary:hover {
+  background-color: #148567;
+}
+
+.search-sidebar .btn--primary:disabled {
+  background-color: #383140;
+  color: #888888;
+  cursor: not-allowed;
+}
+
+/* 右側：検索結果メインエリア（検索結果が増えたらここがスクロールする） */
+.search-main {
+  flex: 1;
+  height: 100%;
+  padding: 20px 24px;
+  overflow-y: auto;
+  background-color: #1a1d21;
+  color: #e8e8e8;
+  box-sizing: border-box;
+}
+
+.search-main h2 {
+  font-size: 18px;
+  font-weight: bold;
+  color: #ffffff;
+  margin-top: 0;
+  margin-bottom: 16px;
+}
+
+/* エラーメッセージ・件数なしメッセージ */
+.error-message {
+  color: #f25f5c;
+  font-size: 14px;
+}
+
+.no-result {
+  color: #ab9ba8;
+  font-size: 14px;
+  margin-top: 12px;
+}
+
+/* 結果一覧 */
+.search__result-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* 結果アイテム（カード型） */
+.search__result-item {
+  background: #2b2631;
+  border: 1px solid #3f3843;
+  padding: 14px 16px;
+  border-radius: 8px;
+  transition: border-color 0.2s;
+}
+
+.search__result-item:hover {
+  border-color: #61556d;
+}
+
+/* 説明文（メッセージ内容） */
+.search__description {
+  color: #f0f0f0;
+  font-size: 14px;
+  line-height: 1.5;
+  white-space: pre-wrap;
+  word-break: break-all;
+}
+
+/* メタ情報（チャンネル名・投稿者・日時） */
+.search__meta {
+  font-size: 12px;
+  color: #ab9ba8;
+  margin-top: 8px;
+  border-top: 1px solid #3f3843;
+  padding-top: 8px;
+}
+
+/* 検索結果項目をクリック可能にするためのスタイル */
+.search__result-item.clickable-item {
+  cursor: pointer;
+  transition: background-color 0.2s ease;
+}
+
+.search__result-item.clickable-item:hover {
+  background-color: rgba(255, 255, 255, 0.05); /* ホバー時のエフェクトはお好みで調整してください */
+}

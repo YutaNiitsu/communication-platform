@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="com.example.app.domain.mapper.MessageMapper">
+
+    <select id="searchMessages" resultType="com.example.app.dto.message.MessageResponseDTO">
+      SELECT *
+      FROM messages
+      WHERE status = 0
+      <if test="keyword != null">
+        AND content LIKE CONCAT('%', #{keyword}, '%')
+      </if>
+      <if test="channelId != null">
+        AND channel_id = #{channelId}
+      </if>
+      <if test="userId != null">
+        AND user_id = #{userId}
+      </if>
+      <if test="from != null">
+        AND created_at &gt;= #{from}
+      </if>
+      <if test="to != null">
+        AND created_at &lt;= #{to}
+      </if>
+      ORDER BY created_at DESC
+    </select>
+
+</mapper>

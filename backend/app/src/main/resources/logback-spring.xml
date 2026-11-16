@@ -1,0 +1,56 @@
+<configuration>
+
+    <!-- アプリケーションログ出力パターン -->
+    <property name="LOG_PATTERN" value="%d{yyyy-MM-dd HH:mm:ss} %-5level [%thread] %logger - %msg%n"/>
+
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>${LOG_PATTERN}</pattern>
+        </encoder>
+    </appender>
+
+    <!-- アプリケーションログ -->
+    <appender name="APP" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>/app/logs/chat-system/app.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+          <fileNamePattern>/app/logs/chat-system/app.log.%d{yyyy-MM-dd}.gz</fileNamePattern>
+          <!-- 保持期間が90日を超えたら削除 -->
+          <maxHistory>90</maxHistory>
+          <!-- 総容量が1MBを超えたら古い順に削除 -->
+          <totalSizeCap>1MB</totalSizeCap>
+        </rollingPolicy>
+        <encoder>
+            <pattern>${LOG_PATTERN}</pattern>
+        </encoder>
+    </appender>
+
+    <!-- 操作ログ -->
+    <appender name="OPERATION" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>/app/logs/chat-system/operation.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>/app/logs/chat-system/operation.log.%d{yyyy-MM-dd}.gz</fileNamePattern>
+            <!-- 保持期間が3年を超えたら削除 -->
+            <maxHistory>1095</maxHistory>
+            <!-- 総容量が10MBを超えたら古い順に削除 -->
+            <totalSizeCap>10MB</totalSizeCap>
+        </rollingPolicy>
+        <encoder class="net.logstash.logback.encoder.LogstashEncoder"/>
+    </appender>
+
+    <!-- ロガー設定 -->
+    <logger name="OPERATION_LOG" level="INFO" additivity="false">
+        <appender-ref ref="OPERATION"/>
+    </logger>
+
+    <logger name="APP_LOG" level="INFO" additivity="false">
+        <appender-ref ref="APP"/>
+        <appender-ref ref="CONSOLE"/>
+    </logger>
+
+    <!-- ルートログ -->
+    <root level="INFO">
+        <appender-ref ref="APP"/>
+        <appender-ref ref="CONSOLE"/>
+    </root>
+
+</configuration>

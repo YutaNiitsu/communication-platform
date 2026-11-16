@@ -1,0 +1,404 @@
+/* ================================
+   Project: チャンネル詳細 - メッセージ・リアクション
+   ================================ */
+
+.channel-detail__message-list {
+  list-style: none;
+  padding: 16px;
+  margin: 0;
+  flex: 1;
+  overflow-y: auto;
+  background: #1a1d21;
+  border-top: 1px solid #3f3843; 
+}
+
+.channel-detail__message-item {
+  display: flex;
+  gap: 12px;
+  margin-bottom: 24px;
+  align-items: flex-start;
+  font-family: "Segoe UI", sans-serif;
+  transition: background-color 0.5s ease;
+  border-radius: 6px;
+}
+
+@keyframes messageFlash {
+  0% {
+    background-color: rgba(17, 100, 163, 0.4);
+    box-shadow: 0 0 15px rgba(17, 100, 163, 0.6);
+  }
+  50% {
+    background-color: rgba(17, 100, 163, 0.25);
+    box-shadow: 0 0 10px rgba(17, 100, 163, 0.4);
+  }
+  100% {
+    background-color: transparent;
+    box-shadow: none;
+  }
+}
+
+.channel-detail__message-item.message-highlight {
+  animation: messageFlash 2.5s cubic-bezier(0.1, 0.8, 0.3, 1) forwards;
+}
+
+.message__avatar {
+  width: 40px;
+  height: 40px;
+  background: #483f50;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: bold;
+  font-size: 18px;
+  color: #ffffff;
+  flex-shrink: 0;
+}
+
+.message__body {
+  flex: 1;
+  position: relative;
+}
+
+.message__header {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 6px;
+}
+
+.message__username {
+  font-weight: 600;
+  font-size: 15px;
+  color: #ffffff;
+}
+
+.message__time {
+  font-size: 12px;
+  color: #ab9ba8;
+}
+
+.message__content {
+  background: #2b2631;
+  border: 1px solid #3f3843;
+  padding: 12px 16px;
+  border-radius: 6px;
+  line-height: 1.6;
+  font-size: 14px;
+  color: #f0f0f0;
+  margin-bottom: 4px;
+  overflow-wrap: anywhere;
+}
+
+/* Markdown本文 */
+.message__formatted-content {
+  min-width: 0;
+}
+
+/* 段落 */
+.message__formatted-content p {
+  margin: 0 0 8px;
+}
+
+.message__formatted-content p:last-child {
+  margin-bottom: 0;
+}
+
+/* 太字 */
+.message__formatted-content strong {
+  font-weight: 700;
+  color: #ffffff;
+}
+
+/* 斜体 */
+.message__formatted-content em {
+  font-style: italic;
+}
+
+/* 取り消し線 */
+.message__formatted-content del {
+  text-decoration: line-through;
+  opacity: 0.75;
+}
+
+/* インラインコード */
+.message__formatted-content code {
+  font-family:
+    "SFMono-Regular",
+    Consolas,
+    "Liberation Mono",
+    Menlo,
+    monospace;
+  font-size: 0.9em;
+  background: #1a1d21;
+  border: 1px solid #3f3843;
+  border-radius: 4px;
+  padding: 2px 5px;
+}
+
+/* コードブロック */
+.message__formatted-content pre {
+  margin: 8px 0;
+  padding: 12px 14px;
+  overflow-x: auto;
+  background: #1a1d21;
+  border: 1px solid #3f3843;
+  border-radius: 6px;
+  line-height: 1.5;
+}
+
+/* highlight.js側のcodeに
+   インラインコード用背景を重ねない */
+.message__formatted-content pre code {
+  display: block;
+  padding: 0;
+  background: transparent;
+  border: none;
+  font-size: 13px;
+  white-space: pre;
+}
+
+/* 引用 */
+.message__formatted-content blockquote {
+  margin: 8px 0;
+  padding: 2px 0 2px 12px;
+  border-left: 4px solid #61556d;
+  color: #c9c3cc;
+}
+
+.message__formatted-content blockquote p {
+  margin: 0;
+}
+
+/* 箇条書き・番号付きリスト */
+.message__formatted-content ul,
+.message__formatted-content ol {
+  margin: 8px 0;
+  padding-left: 24px;
+}
+
+.message__formatted-content li {
+  margin: 2px 0;
+}
+
+/* リンク */
+.message__formatted-content a {
+  color: #36c5f0;
+  text-decoration: none;
+  word-break: break-word;
+}
+
+.message__formatted-content a:hover {
+  text-decoration: underline;
+}
+
+/* 水平線 */
+.message__formatted-content hr {
+  border: 0;
+  border-top: 1px solid #3f3843;
+  margin: 12px 0;
+}
+
+/* 長い文字列・URL対策 */
+.message__formatted-content {
+  overflow-wrap: anywhere;
+  word-break: break-word;
+}
+
+/* コードブロックだけは改行を保持 */
+.message__formatted-content pre,
+.message__formatted-content code {
+  overflow-wrap: normal;
+  word-break: normal;
+}
+
+.message__actions {
+  margin-top: 4px;
+  display: flex;
+  gap: 6px;
+}
+
+/* ホバーアクション・ケバブ */
+.message-hover-actions {
+  position: absolute;
+  top: -12px;
+  right: 16px;
+  display: flex;
+  align-items: center;
+  gap: 2px;
+  background: #221f26;
+  border: 1px solid #3f3843;
+  border-radius: 6px;
+  padding: 2px 4px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.4);
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.15s ease, visibility 0.15s ease, transform 0.15s ease;
+  transform: translateY(4px);
+  z-index: 10;
+}
+
+.channel-detail__message-item:hover .message-hover-actions,
+.message-hover-actions:has(.kebab-dropdown) {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.action-btn {
+  background: transparent;
+  border: none;
+  color: #ab9ba8;
+  font-size: 13px;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background-color 0.15s, color 0.15s;
+}
+
+.action-btn:hover {
+  background-color: #383140;
+  color: #ffffff;
+}
+
+.kebab-menu-container {
+  position: relative;
+  opacity: 1;
+  visibility: visible;
+}
+
+.kebab-btn {
+  background: #383140;
+  border: 1px solid #483f50;
+  color: #d0d0d0;
+  font-size: 18px;
+  cursor: pointer;
+  padding: 2px 10px;
+  border-radius: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.kebab-btn:hover {
+  background-color: #483f50;
+  color: #ffffff;
+}
+
+.kebab-dropdown {
+  position: absolute;
+  right: 0;
+  top: 32px;
+  background: #2b2631;
+  border: 1px solid #3f3843;
+  border-radius: 6px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.4);
+  width: 110px;
+  z-index: 50;
+  display: flex;
+  flex-direction: column;
+  padding: 4px 0;
+}
+
+.kebab-dropdown__item {
+  background: transparent;
+  border: none;
+  color: #e8e8e8;
+  padding: 8px 14px;
+  text-align: left;
+  font-size: 0.9rem;
+  cursor: pointer;
+  width: 100%;
+}
+
+.kebab-dropdown__item:hover {
+  background-color: #3f3843;
+  color: #ffffff;
+}
+
+.kebab-dropdown__item--danger {
+  color: #f25f5c;
+}
+
+.kebab-dropdown__item--danger:hover {
+  background-color: #5a2a2a;
+  color: #ff8080;
+}
+
+/* リアクション */
+.message-reactions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+
+.reaction-badge {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: #221f26;
+  border: 1px solid #3f3843;
+  border-radius: 16px;
+  padding: 4px 12px;
+  font-size: 14px;
+  color: #d0d0d0;
+  cursor: pointer;
+  user-select: none;
+  transition: background-color 0.15s, border-color 0.15s, transform 0.1s;
+}
+
+.reaction-badge:hover {
+  background-color: #2b2631;
+  border-color: #61556d;
+  transform: translateY(-1px);
+}
+
+.reaction-badge.reacted {
+  background: rgba(18, 100, 163, 0.15);
+  border-color: #1164a3;
+  color: #1164a3;
+}
+
+.reaction-badge.reacted:hover {
+  background: rgba(18, 100, 163, 0.25);
+  border-color: #1475c0;
+}
+
+.reaction-count {
+  font-weight: 600;
+  font-size: 13px;
+  color: inherit;
+}
+
+.reaction-badge::after {
+  content: attr(aria-label);
+  position: absolute;
+  bottom: 100%;
+  left: 0;
+  transform: translateY(-8px);
+  background-color: #1a1d21 !important;
+  color: #ffffff !important;
+  font-size: 12px;
+  font-weight: 500;
+  white-space: nowrap;
+  padding: 6px 10px;
+  border-radius: 6px;
+  border: 1px solid #3f3843 !important;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.5) !important;
+  pointer-events: none;
+  opacity: 0;
+  visibility: hidden;
+  transition: opacity 0.15s ease, transform 0.15s ease;
+  z-index: 100;
+}
+
+.reaction-badge:hover::after {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(-6px);
+}

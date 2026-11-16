@@ -1,0 +1,37 @@
+Get http://localhost:8080/channels/1/messages
+
+###
+
+Get http://localhost:8080/channels/1/messages?message_id=113&range=10
+
+###
+
+Post http://localhost:8080/channels/1/messages
+content-type: application/json
+
+{
+    "content": "テストメッセージ"
+}
+
+###
+
+Put http://localhost:8080/messages/37
+content-type: application/json
+
+{
+    "content": "テストメッセージ修正",
+    "status": 0
+}
+
+###
+
+Delete http://localhost:8080/messages/37
+
+
+
+###
+
+Get http://localhost:8080/channels
+###
+
+Get http://localhost:8080/message_template_categories?is_shared=true

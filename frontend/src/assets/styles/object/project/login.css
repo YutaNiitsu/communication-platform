@@ -1,0 +1,48 @@
+/* ================================
+   Slack ダークモード風：ログイン画面
+   ================================ */
+
+.login__container {
+  max-width: 400px;
+  margin: 80px auto;
+  padding: 20px;
+
+  /* ダークモード用の枠線と角丸 */
+  border: 1px solid #3a3d41;
+  border-radius: 8px;
+
+  /* base.css の背景が適用されるので指定不要 */
+  color: #e8e8e8; /* テキストは明るめに */
+}
+
+/* 入力欄 */
+.login__container input {
+  width: 100%;
+  padding: 10px;
+  margin-top: 8px;
+
+  background: #2c2f33;
+  color: #ffffff;
+  border: 1px solid #3a3d41;
+  border-radius: 6px;
+}
+
+/* ボタン */
+.login__container .btn {
+  background: #3a3d41;
+  color: #ffffff;
+  border: none;
+  padding: 10px 14px;
+  border-radius: 6px;
+  margin-top: 12px;
+}
+
+.login__container .btn:hover {
+  background: #4a4d52;
+}
+
+/* エラー表示 */
+.login__error {
+  color: #ff6b6b; /* ダークモードでも見やすい赤 */
+  margin-top: 10px;
+}

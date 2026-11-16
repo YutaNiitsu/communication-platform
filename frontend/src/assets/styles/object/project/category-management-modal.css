@@ -1,0 +1,182 @@
+/* モーダル背景 */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.65);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+/* モーダル本体 */
+.modal-container {
+  background-color: #222529;
+  border: 1px solid #3f444d;
+  border-radius: 8px;
+  width: 100%;
+  max-width: 560px;
+  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+  color: #ffffff;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.modal-header {
+  padding: 20px 24px 12px;
+  border-bottom: 1px solid #2d3139;
+}
+
+.modal-header h2 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: bold;
+}
+
+.modal-body {
+  padding: 20px 24px;
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+}
+
+/* セクション設定 */
+.form-section h3,
+.list-section h3 {
+  font-size: 15px;
+  font-weight: bold;
+  margin: 0 0 12px 0;
+  color: #ffffff;
+}
+
+.form-group {
+  margin-bottom: 12px;
+}
+
+.form-input {
+  width: 100%;
+  background-color: #1a1d21;
+  border: 1px solid #3f444d;
+  border-radius: 4px;
+  padding: 10px 12px;
+  color: #ffffff;
+  font-size: 14px;
+  box-sizing: border-box;
+  outline: none;
+}
+
+.form-input:focus {
+  border-color: #1164a3;
+}
+
+/* チェックボックス（左寄せ密着配置） */
+.checkbox-row {
+  margin-bottom: 16px;
+  display: flex;
+  justify-content: flex-start;
+}
+
+.checkbox-label {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+
+.checkbox-label input[type="checkbox"] {
+  margin: 0;
+  cursor: pointer;
+}
+
+.checkbox-label span {
+  font-size: 13px;
+  color: #ffffff;
+}
+
+.btn-group-left {
+  display: flex;
+  gap: 8px;
+}
+
+/* テーブルスタイル */
+.table-wrapper {
+  border: 1px solid #3f444d;
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.category-table {
+  width: 100%;
+  border-collapse: collapse;
+  text-align: left;
+  font-size: 14px;
+}
+
+.category-table th,
+.category-table td {
+  padding: 10px 16px;
+  border-bottom: 1px solid #2d3139;
+}
+
+.category-table th {
+  background-color: #1a1d21;
+  color: #ab9ba8;
+  font-weight: normal;
+}
+
+.category-table tr:last-child td {
+  border-bottom: none;
+}
+
+.action-cell {
+  display: flex;
+  gap: 6px;
+  align-items: center;
+}
+
+.no-permission {
+  color: #868686;
+  padding-left: 4px;
+}
+
+/* フッター */
+.modal-footer {
+  padding: 12px 24px 20px !important;
+  display: flex !important;
+  justify-content: flex-end !important;
+}
+
+/* ボタン */
+.btn {
+  padding: 7px 16px;
+  font-size: 13px;
+  border-radius: 4px;
+  border: 1px solid transparent;
+  cursor: pointer;
+}
+
+.btn-primary {
+  background-color: #007a5a;
+  color: #ffffff;
+}
+
+.btn-secondary {
+  background-color: #2d3139;
+  color: #ffffff;
+  border-color: #3f444d;
+}
+
+.btn-danger {
+  background-color: #e01e5a;
+  color: #ffffff;
+}
+
+.btn-sm {
+  padding: 3px 10px;
+  font-size: 12px;
+}

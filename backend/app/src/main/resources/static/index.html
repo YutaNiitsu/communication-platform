@@ -1,0 +1,246 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>WebSocket & API Tester</title>
+    <style>
+        body { font-family: sans-serif; margin: 20px; background: #f5f5f5; color: #333; }
+        .container { max-width: 900px; margin: 0 auto; display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+        .box { background: white; padding: 20px; border-radius: 8px; box-shadow: 0 2px 4px rgba(0,0,0,0.1); }
+        .full-width { grid-column: 1 / -1; }
+        h2 { margin-top: 0; border-bottom: 2px solid #ddd; padding-bottom: 5px; font-size: 1.2rem; }
+        .form-group { margin-bottom: 12px; }
+        label { display: block; margin-bottom: 4px; font-weight: bold; font-size: 0.9rem; }
+        input[type="text"], input[type="password"], textarea { width: 100%; padding: 8px; box-sizing: border-box; border: 1px solid #ccc; border-radius: 4px; }
+        textarea { resize: vertical; font-family: monospace; }
+        button { background: #007bff; color: white; border: none; padding: 10px 15px; border-radius: 4px; cursor: pointer; font-weight: bold; }
+        button:hover { background: #0056b3; }
+        button:disabled { background: #ccc; cursor: not-allowed; }
+        .status { font-weight: bold; margin-left: 10px; }
+        .connected { color: green; }
+        .disconnected { color: red; }
+        .log-area { background: #222; color: #0f0; padding: 10px; height: 200px; overflow-y: auto; font-family: monospace; font-size: 0.85rem; border-radius: 4px; white-space: pre-wrap; }
+    </style>
+</head>
+<body>
+
+<h1>WebSocket & API 疎通テストツール</h1>
+
+<div class="container">
+    
+    <!-- 1. ログインエリア -->
+    <div class="box full-width">
+        <h2>1. ログイン認証 (HTTP POST)</h2>
+        <div style="display: flex; gap: 15px; align-items: flex-end;">
+            <div class="form-group" style="flex: 1;">
+                <label>ユーザー名 (username)</label>
+                <input type="text" id="username" value="test_user1">
+            </div>
+            <div class="form-group" style="flex: 1;">
+                <label>パスワード (password)</label>
+                <input type="password" id="password" value="password">
+            </div>
+            <div class="form-group">
+                <button id="loginBtn" onclick="doLogin()">ログイン & 接続</button>
+            </div>
+        </div>
+        <div>
+            WebSocket状態: <span id="wsStatus" class="status disconnected">未接続</span>
+        </div>
+    </div>
+
+    <!-- 2. 汎用APIリクエストエリア -->
+    <div class="box">
+        <h2>2. 任意のAPIリクエスト送信</h2>
+        <div class="form-group">
+            <label>メソッド & パス</label>
+            <div style="display: flex; gap: 5px;">
+                <select id="apiMethod" style="padding: 8px;">
+                    <option value="GET">GET</option>
+                    <option value="POST" selected>POST</option>
+                    <option value="PUT">PUT</option>
+                    <option value="DELETE">DELETE</option>
+                </select>
+                <input type="text" id="apiPath" value="http://192.168.235" placeholder="URLを入力">
+            </div>
+        </div>
+        <div class="form-group">
+            <label>リクエストボディ (JSON)</label>
+            <textarea id="apiBody" rows="4">{\n  "key": "value"\n}</textarea>
+        </div>
+        <button onclick="sendApiRequest()">APIリクエスト送信</button>
+        
+        <div class="form-group" style="margin-top: 15px;">
+            <label>APIレスポンス</label>
+            <div id="apiResponse" class="log-area" style="background: #f8f9fa; color: #333; border: 1px solid #ccc; height: 150px;">ここに結果が表示されます</div>
+        </div>
+    </div>
+
+    <!-- 3. WebSocket送受信エリア -->
+    <div class="box">
+        <h2>3. WebSocket メッセージ送信</h2>
+        <div class="form-group">
+            <label>送信データ (テキスト または JSON文字列)</label>
+            <textarea id="wsMessage" rows="6">{\n  "action": "ping",\n  "timestamp": 1710000000000\n}</textarea>
+        </div>
+        <button id="wsSendBtn" onclick="sendWsMessage()" disabled>WSメッセージ送信</button>
+    </div>
+
+    <!-- 4. WebSocketログエリア -->
+    <div class="box full-width">
+        <h2>4. WebSocket 通信ログ (受信・イベント)</h2>
+        <div id="wsLog" class="log-area"></div>
+        <button onclick="clearLog()" style="margin-top: 10px; background: #6c757d;">ログクリア</button>
+    </div>
+
+</div>
+
+<script>
+    const LOGIN_URL = "http://192.168.235.5:8080/auth/login";
+    const WS_URL = "ws://192.168.235.5:8080/ws/chat";
+    
+    let webSocket = null;
+
+    // 1. ログイン処理
+    async function doLogin() {
+        const username = document.getElementById('username').value;
+        const password = document.getElementById('password').value;
+        const loginBtn = document.getElementById('loginBtn');
+
+        log("【HTTP】ログイン要求を送信中...");
+        loginBtn.disabled = true;
+
+        try {
+            const response = await fetch(LOGIN_URL, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ username, password })
+            });
+
+            if (!response.ok) {
+                throw new Error(`ログイン失敗: ステータス ${response.status}`);
+            }
+
+            log("【HTTP】ログイン成功！自動でWebSocket接続を開始します...");
+            
+            // ログイン成功したら自動でWebSocket接続
+            connectWebSocket();
+
+        } catch (error) {
+            log(`【エラー】ログインに失敗しました: ${error.message}`);
+            loginBtn.disabled = false;
+        }
+    }
+
+    // 2. WebSocket接続処理
+    function connectWebSocket() {
+        if (webSocket && webSocket.readyState === WebSocket.OPEN) {
+            log(" すでにWebSocketは接続済みです。");
+            return;
+        }
+
+        log(`【WS】接続開始: ${WS_URL}`);
+        
+        // サーバーがCookie認証（HttpOnly等）を行っている場合、ブラウザが自動でCookieを乗せて接続します
+        webSocket = new WebSocket(WS_URL);
+
+        webSocket.onopen = function(event) {
+            log("【WSイベント】接続が確立されました (onopen)");
+            updateWsStatus(true);
+        };
+
+        webSocket.onmessage = function(event) {
+            log(`【WS受信】← ${event.data}`);
+        };
+
+        webSocket.onerror = function(error) {
+            log(`【WSエラー】通信エラーが発生しました`);
+            console.error(error);
+        };
+
+        webSocket.onclose = function(event) {
+            log(`【WSイベント】接続が切断されました (code: ${event.code}, reason: ${event.reason})`);
+            updateWsStatus(false);
+            document.getElementById('loginBtn').disabled = false;
+        };
+    }
+
+    // 3. 汎用APIリクエスト送信
+    async function sendApiRequest() {
+        const method = document.getElementById('apiMethod').value;
+        const url = document.getElementById('apiPath').value;
+        const bodyText = document.getElementById('apiBody').value;
+        const responseArea = document.getElementById('apiResponse');
+
+        responseArea.textContent = "送信中...";
+        
+        const options = {
+            method: method,
+            headers: {}
+        };
+
+        // GET/HEAD以外でボディがあれば設定
+        if (method !== 'GET' && method !== 'HEAD' && bodyText.trim() !== '') {
+            options.headers['Content-Type'] = 'application/json';
+            options.body = bodyText;
+        }
+
+        try {
+            const res = await fetch(url, options);
+            const statusText = `Status: ${res.status} ${res.statusText}\n\n`;
+            
+            let dataText = "";
+            const contentType = res.headers.get("content-type");
+            if (contentType && contentType.includes("application/json")) {
+                const json = await res.json();
+                dataText = JSON.stringify(json, null, 2);
+            } else {
+                dataText = await res.text();
+            }
+
+            responseArea.textContent = statusText + dataText;
+        } catch (error) {
+            responseArea.textContent = `【エラー】リクエスト失敗:\n${error.message}`;
+        }
+    }
+
+    // 4. WebSocketメッセージ送信
+    function sendWsMessage() {
+        if (!webSocket || webSocket.readyState !== WebSocket.OPEN) {
+            alert("WebSocketが接続されていません。");
+            return;
+        }
+        const msg = document.getElementById('wsMessage').value;
+        webSocket.send(msg);
+        log(`【WS送信】→ ${msg}`);
+    }
+
+    // --- ユーティリティ関数 ---
+    function log(message) {
+        const logArea = document.getElementById('wsLog');
+        const time = new Date().toLocaleTimeString();
+        logArea.textContent += `[${time}] ${message}\n`;
+        logArea.scrollTop = logArea.scrollHeight; // 最下部へスクロール
+    }
+
+    function clearLog() {
+        document.getElementById('wsLog').textContent = "";
+    }
+
+    function updateWsStatus(isConnected) {
+        const statusEl = document.getElementById('wsStatus');
+        const sendBtn = document.getElementById('wsSendBtn');
+        if (isConnected) {
+            statusEl.textContent = "接続中";
+            statusEl.className = "status connected";
+            sendBtn.disabled = false;
+        } else {
+            statusEl.textContent = "未接続";
+            statusEl.className = "status disconnected";
+            sendBtn.disabled = true;
+        }
+    }
+</script>
+</body>
+</html>

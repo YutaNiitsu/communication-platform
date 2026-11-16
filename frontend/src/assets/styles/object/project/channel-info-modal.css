@@ -1,0 +1,194 @@
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  background-color: rgba(0, 0, 0, 0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 100;
+}
+
+.modal-content {
+  background: #221f26;
+  border: 1px solid #3f3843;
+  border-radius: 8px;
+  width: 600px;
+  max-width: 90vw;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+  padding: 24px;
+  color: #e8e8e8;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.5);
+  overflow-y: auto;
+  position: relative;
+}
+
+.modal-content h2 {
+  font-size: 18px;
+  color: #ffffff;
+  margin-top: 0;
+  margin-bottom: 16px;
+}
+
+.info-box {
+  background: #1a1d21;
+  border: 1px solid #3f3843;
+  padding: 12px 16px;
+  border-radius: 6px;
+  margin-bottom: 16px;
+  font-size: 14px;
+}
+
+.info-box p {
+  margin: 4px 0;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.section-header h3 {
+  font-size: 15px;
+  color: #ffffff;
+  margin: 0;
+}
+
+.member-scroll-box {
+  background: #1a1d21;
+  border: 1px solid #3f3843;
+  border-radius: 6px;
+  max-height: 150px;
+  overflow-y: auto;
+  padding: 8px 12px;
+  margin-bottom: 20px;
+}
+
+.member-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.member-list li {
+  padding: 6px 0;
+  font-size: 14px;
+  border-bottom: 1px solid #2b2631;
+  color: #d0d0d0;
+}
+
+.member-list li:last-child {
+  border-bottom: none;
+}
+
+.channel-management-section {
+  border-top: 1px solid #3f3843;
+  padding-top: 16px;
+  margin-bottom: 20px;
+}
+
+.channel-management-section h3 {
+  font-size: 15px;
+  color: #ffffff;
+  margin-top: 0;
+  margin-bottom: 10px;
+}
+
+.management-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.note {
+  font-size: 11px;
+  color: #ab9ba8;
+  font-weight: normal;
+  margin-left: 4px;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  border-top: 1px solid #3f3843;
+  padding-top: 16px;
+}
+.modal-footer .btn {
+  margin-left: auto; /* ボタンを強制的に右端に寄せる */
+}
+
+/* ユーザー招待サブモーダル */
+.sub-modal-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.7);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 110;
+  border-radius: 8px;
+}
+
+.sub-modal-content {
+  background: #2b2631;
+  border: 1px solid #3f3843;
+  border-radius: 8px;
+  width: 400px;
+  max-width: 85%;
+  padding: 20px;
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.6);
+  display: flex;
+  flex-direction: column;
+}
+
+.sub-modal-content h3 {
+  font-size: 16px;
+  color: #ffffff;
+  margin-top: 0;
+  margin-bottom: 12px;
+}
+
+.user-checkbox-list {
+  background: #1a1d21;
+  border: 1px solid #3f3843;
+  border-radius: 6px;
+  max-height: 180px;
+  overflow-y: auto;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 16px;
+}
+
+.checkbox-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: #e8e8e8;
+  cursor: pointer;
+}
+
+.checkbox-item input[type="checkbox"] {
+  accent-color: #007a5a;
+  width: 16px;
+  height: 16px;
+  cursor: pointer;
+}
+
+.sub-modal-actions {
+  display: flex;
+  justify-content: flex-start; /* 左側に寄せることで「左が決定・右がキャンセル」の並びにする */
+  gap: 250px;                  /* 決定とキャンセルの間に程よい隙間を空ける */
+  margin-top: 4px;            /* 上部要素との余白調整 */
+}

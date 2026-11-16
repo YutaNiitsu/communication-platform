@@ -1,0 +1,129 @@
+/* ================================
+   Project: チャンネル詳細 - 共通パーツ・コンポーネント
+   ================================ */
+
+.btn {
+  background-color: #383140;
+  color: #e8e8e8;
+  border: 1px solid #483f50;
+  padding: 6px 14px;
+  border-radius: 6px;
+  font-size: 14px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background-color 0.2s, border-color 0.2s;
+}
+
+.btn:hover {
+  background-color: #483f50;
+  color: #ffffff;
+}
+
+.btn--primary {
+  background-color: #007a5a;
+  border-color: #007a5a;
+  color: #ffffff;
+}
+
+.btn--primary:hover {
+  background-color: #148567;
+}
+
+.btn--secondary {
+  background-color: #383140;
+  color: #e8e8e8;
+}
+
+.btn--secondary:hover {
+  background-color: #483f50;
+}
+
+.btn--danger {
+  background-color: #5a2a2a;
+  border-color: #7a3a3a;
+  color: #ff9999;
+}
+
+.btn--danger:hover {
+  background-color: #7a3a3a;
+  color: #ffb3b3;
+}
+
+.note {
+  font-size: 11px;
+  color: #ab9ba8;
+  font-weight: normal;
+  margin-left: 4px;
+}
+
+/* メンションピル */
+.mention-pill {
+  display: inline-block;
+  vertical-align: baseline;
+  color: #1164a3;
+  background-color: #dbeaf8;
+  padding: 0.1rem 0.35rem;
+  margin: 0;
+  border-radius: 4px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: background-color 0.15s ease;
+}
+
+.mention-pill:hover {
+  background-color: #c0def6;
+  text-decoration: none;
+}
+
+/* プロフィールカード */
+.mention-profile-card {
+  position: absolute;
+  z-index: 1000;
+  background: #ffffff;
+  border: 1px solid #d1d2d3;
+  border-radius: 8px;
+  padding: 16px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+  width: 240px;
+  pointer-events: auto;
+}
+
+.profile-card__header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.profile-card__avatar {
+  width: 40px;
+  height: 40px;
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #ffffff;
+  font-weight: bold;
+  font-size: 16px;
+}
+
+.profile-card__info {
+  display: flex;
+  flex-direction: column;
+}
+
+.profile-card__name {
+  font-weight: 700;
+  font-size: 15px;
+  color: #1d1c1d;
+}
+
+.profile-card__role {
+  font-size: 12px;
+  color: #616061;
+  margin-top: 2px;
+}
+
+.profile-card__role.is-admin {
+  color: #1164a3;
+  font-weight: 600;
+}
