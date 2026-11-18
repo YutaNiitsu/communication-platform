@@ -70,6 +70,7 @@ public class SyncService {
                             m.getChannelId(),
                             m.getUserId(),
                             m.getReplyToMessageId(),
+                            m.getRequestId(),
                             m.getContent(),
                             m.getStatus(),
                             m.getCreatedAt(),

@@ -11,7 +11,7 @@ const router = useRouter()
 const authStore = useAuthStore()
 const toastStore = useToastStore()
 const configStore = useConfigStore()
-const authChannel = new BroadcastChannel('auth_channel')
+//const authChannel = new BroadcastChannel('auth_channel')
 
 // 401（セッション切れ）検知時の共通ハンドラ
 const handleUnauthorized = () => {
@@ -33,29 +33,29 @@ onMounted(() => {
   window.addEventListener('auth:unauthorized', handleUnauthorized as EventListener)
 
   // 別タブ・別ウィンドウからのログイン/ログアウト通知を受信
-  authChannel.onmessage = (event) => {
-    const { type, userId } = event.data
+  // authChannel.onmessage = (event) => {
+  //   const { type, userId } = event.data
 
-    if (type === 'LOGOUT') {
-      authStore.clearUser()
-      if (router.currentRoute.value.path !== '/login') {
-        toastStore.showToast('別ウィンドウでログアウトされました。', 'info')
-        router.push('/login')
-      }
-    }
+  //   if (type === 'LOGOUT') {
+  //     authStore.clearUser()
+  //     if (router.currentRoute.value.path !== '/login') {
+  //       toastStore.showToast('別ウィンドウでログアウトされました。', 'info')
+  //       router.push('/login')
+  //     }
+  //   }
 
-    if (type === 'LOGIN') {
-      // ログイン画面にいる場合や、今表示しているユーザーと違うユーザーでログインされた場合
-      if (router.currentRoute.value.path === '/login' || (authStore.user && authStore.user.userId !== userId)) {
-        window.location.reload()
-      }
-    }
-  }
+  //   if (type === 'LOGIN') {
+  //     // ログイン画面にいる場合や、今表示しているユーザーと違うユーザーでログインされた場合
+  //     if (router.currentRoute.value.path === '/login' || (authStore.user && authStore.user.userId !== userId)) {
+  //       window.location.reload()
+  //     }
+  //   }
+  // }
 })
 
 onUnmounted(() => {
   window.removeEventListener('auth:unauthorized', handleUnauthorized as EventListener)
-  authChannel.close() // クリーンアップ
+  //authChannel.close() // クリーンアップ
 })
 </script>
 

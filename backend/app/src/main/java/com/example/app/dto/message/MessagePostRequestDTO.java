@@ -9,5 +9,7 @@ public record MessagePostRequestDTO(
         @JsonProperty("reply_to_message_id")
         Long replyToMessageId,
         @JsonProperty("mentioned_user_id")
-        List<Long> mentionedUserId
+        List<Long> mentionedUserId,
+        @JsonProperty("request_id")
+        String requestId
 ) {}

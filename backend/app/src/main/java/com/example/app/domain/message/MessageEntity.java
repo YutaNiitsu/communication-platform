@@ -29,6 +29,10 @@ public class MessageEntity {
     @Column(nullable = true)
     private Long replyToMessageId;
 
+    @JoinColumn(name = "request_id")
+    @Column(nullable = false, unique = true)
+    private String requestId;
+
     @Column(nullable = false, columnDefinition = "TEXT")
     private String content;
 
@@ -71,6 +75,13 @@ public class MessageEntity {
     }
     public void setReplyToMessageId(Long replyToMessageId) {
         this.replyToMessageId = replyToMessageId;
+    }
+
+    public String getRequestId() {
+        return requestId;
+    }
+    public void setRequestId(String requestId) {
+        this.requestId = requestId;
     }
 
     @PreUpdate

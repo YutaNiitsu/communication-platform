@@ -17,6 +17,7 @@ public interface MessageMapper {
             channel_id AS channelId,
             user_id AS userId,
             reply_to_message_id AS replyToMessageId,
+            request_id AS requestId,
             content,
             status,
             created_at AS createdAt,
@@ -33,6 +34,7 @@ public interface MessageMapper {
             channel_id AS channelId,
             user_id AS userId,
             reply_to_message_id AS replyToMessageId,
+            request_id AS requestId,
             content,
             status,
             created_at AS createdAt,
@@ -50,6 +52,7 @@ public interface MessageMapper {
             channel_id AS channelId,
             user_id AS userId,
             reply_to_message_id AS replyToMessageId,
+            request_id AS requestId,
             content,
             status,
             created_at AS createdAt,
@@ -72,6 +75,7 @@ public interface MessageMapper {
             channel_id AS channelId,
             user_id AS userId,
             reply_to_message_id AS replyToMessageId,
+            request_id AS requestId,
             content,
             status,
             created_at AS createdAt,
@@ -94,6 +98,7 @@ public interface MessageMapper {
             channel_id AS channelId,
             user_id AS userId,
             reply_to_message_id AS replyToMessageId,
+            request_id AS requestId,
             content,
             status,
             created_at AS createdAt,
@@ -113,6 +118,7 @@ public interface MessageMapper {
             channel_id AS channelId,
             user_id AS userId,
             reply_to_message_id AS replyToMessageId,
+            request_id AS requestId,
             content,
             status,
             created_at AS createdAt,
@@ -132,6 +138,7 @@ public interface MessageMapper {
             channel_id AS channelId,
             user_id AS userId,
             reply_to_message_id AS replyToMessageId,
+            request_id AS requestId,
             content,
             status,
             created_at AS createdAt,
@@ -155,6 +162,7 @@ public interface MessageMapper {
             channel_id AS channelId,
             user_id AS userId,
             reply_to_message_id AS replyToMessageId,
+            request_id AS requestId,
             content,
             status,
             created_at AS createdAt,
@@ -174,6 +182,7 @@ public interface MessageMapper {
             channel_id AS channelId,
             user_id AS userId,
             reply_to_message_id AS replyToMessageId,
+            request_id AS requestId,
             content,
             status,
             created_at AS createdAt,
@@ -199,6 +208,7 @@ public interface MessageMapper {
             channel_id AS channelId,
             user_id AS userId,
             reply_to_message_id AS replyToMessageId,
+            request_id AS requestId,
             content,
             status,
             created_at AS createdAt,
@@ -222,6 +232,7 @@ public interface MessageMapper {
             channel_id AS channelId,
             user_id AS userId,
             reply_to_message_id AS replyToMessageId,
+            request_id AS requestId,
             content,
             status,
             created_at AS createdAt,
@@ -241,9 +252,9 @@ public interface MessageMapper {
     // INSERT
     @Insert("""
         INSERT INTO messages(channel_id, user_id, reply_to_message_id,
-                             content, status, created_at, updated_at)
+                             request_id, content, status, created_at, updated_at)
         VALUES(#{channelId}, #{userId}, #{replyToMessageId},
-               #{content}, #{status}, NOW(), NOW())
+               #{requestId}, #{content}, #{status}, NOW(), NOW())
     """)
     @Options(useGeneratedKeys = true, keyProperty = "id")
     void insert(MessageEntity message);
@@ -287,12 +298,27 @@ public interface MessageMapper {
           AND id < #{messageId}
           AND status != 2
     ) THEN TRUE ELSE FALSE END
-""")
-boolean existsPreviousMessages(
-        @Param("channelId") Long channelId,
-        @Param("messageId") Long messageId
-);
+    """)
+    boolean existsPreviousMessages(
+            @Param("channelId") Long channelId,
+            @Param("messageId") Long messageId
+    );
 
+    @Select("""
+        SELECT  
+            id,
+            channel_id AS channelId,
+            user_id AS userId,
+            reply_to_message_id AS replyToMessageId,
+            request_id AS requestId,
+            content,
+            status,
+            created_at AS createdAt,
+            updated_at AS updatedAt
+        FROM messages
+        WHERE request_id = #{requestId}
+    """)
+    Optional<MessageEntity> findByRequestId(@Param("requestId") String requestId);
 
     
 }

@@ -12,6 +12,7 @@ public record MessageDTO(
         Long userId,
         @JsonProperty("reply_to_message_id")
         Long replyToMessageId,
+        String requestId,
         String content,
         int status, // 0: アクティブ, 1: アーカイブ, 2: 削除
         @JsonProperty("created_at")

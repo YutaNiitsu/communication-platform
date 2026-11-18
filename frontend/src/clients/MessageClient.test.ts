@@ -32,11 +32,12 @@ describe('MessageClient', () => {
     vi.mocked(api.post).mockResolvedValueOnce({ data: mockResponse })
 
     // ★ 引数の userId (10) を削除し、正しい引数構成 (channelId, content, replyToMessageId) に修正
-    const result = await MessageClient.postMessage(1, 'テスト', null)
+    const result = await MessageClient.postMessage(1, 'テスト', 'req1', null)
 
     expect(api.post).toHaveBeenCalledWith('/channels/1/messages', {
       content: 'テスト',
       reply_to_message_id: null,
+      request_id: 'req1',
     })
     expect(result).toEqual(mockResponse)
   })

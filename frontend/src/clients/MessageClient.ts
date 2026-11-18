@@ -30,6 +30,7 @@ export const MessageClient = {
   async postMessage(
     channelId: number,
     content: string,
+    requestId: string,
     replyToMessageId?: number | null,
     mentionedUserIds: number[] = []
   ) {
@@ -37,6 +38,7 @@ export const MessageClient = {
       content,
       reply_to_message_id: replyToMessageId ?? null,
       mentioned_user_id: mentionedUserIds,
+      request_id: requestId
     })
     return res.data
   },

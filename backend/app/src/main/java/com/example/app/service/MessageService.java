@@ -26,6 +26,7 @@ import com.example.app.exception.NotFoundException;
 import com.example.app.security.AuthUtil;
 import com.example.app.websocket.WebSocketEventPublisher;
 
+import org.springframework.dao.DuplicateKeyException;
 import org.springframework.stereotype.Service;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,6 +34,7 @@ import org.slf4j.LoggerFactory;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Optional;
 import java.util.stream.Collectors;
 
 
@@ -90,6 +92,7 @@ public class MessageService{
                     m.getChannelId(),
                     m.getUserId(),
                     m.getReplyToMessageId(),
+                    m.getRequestId(),
                     m.getContent(),
                     m.getStatus(),
                     m.getCreatedAt(),
@@ -152,10 +155,38 @@ public class MessageService{
         String token = authUtil.getTokenFromCookie(httpRequest);
         UserEntity requestUser = authUtil.getUserFromToken(token);
 
-        // 文字数制限チェック
-		if (request.content().length() > props.getMessage().getMaxLength()) {
-			throw new IllegalArgumentException("Message content exceeds the maximum length");
+		// メッセージの重複リクエストチェック
+        MessageEntity existing = messageMapper.findByRequestId( request.requestId())
+				.orElse(null);
+
+		if (existing != null) {
+
+			appLog.info(
+				"Duplicate request detected. requestId={}",
+				request.requestId()
+			);
+
+			List<MessageMentionEntity> mentions = mentionMapper.findByMessageId(existing.getId());
+        	List<MentionResponseDTO> mentionDTOs = mentions.stream()
+                .map(mm -> new MentionResponseDTO(
+                        mm.getId(),
+                        mm.getMentionedUserId(),
+                        mm.getCreatedAt()
+                ))
+                .toList();
+
+			return new MessageSummaryDTO(
+                toResponse(existing),
+                new ArrayList<>(),
+                mentionDTOs,
+				new ArrayList<>()
+        	);
 		}
+
+        // 文字数制限チェック
+        if (request.content().length() > props.getMessage().getMaxLength()) {
+            throw new IllegalArgumentException("Message content exceeds the maximum length");
+        }
 
         List<String> target = new ArrayList<>();
         Long replyToMessageId = null;
@@ -163,6 +194,7 @@ public class MessageService{
         MessageEntity message = new MessageEntity();
         message.setChannelId(channelId);
         message.setUserId(requestUser.getId());
+		message.setRequestId(request.requestId());
         message.setContent(request.content());
 		message.setStatus(0);
 
@@ -186,10 +218,45 @@ public class MessageService{
                     message.getReplyToMessageId();
         }
 
-        messageMapper.insert(message);
+        try {
+			messageMapper.insert(message);
+		} catch (DuplicateKeyException e) {
+			// メッセージの重複リクエストチェック
+			existing = messageMapper.findByRequestId(request.requestId())
+				.orElse(null);
+
+			if (existing != null) {
+				appLog.info(
+					"Duplicate request detected. requestId={}",
+					request.requestId()
+				);
+				List<MessageMentionEntity> mentions = mentionMapper.findByMessageId(existing.getId());
+				List<MentionResponseDTO> mentionDTOs = mentions.stream()
+					.map(mm -> new MentionResponseDTO(
+							mm.getId(),
+							mm.getMentionedUserId(),
+							mm.getCreatedAt()
+					))
+					.toList();
+
+				return new MessageSummaryDTO(
+					toResponse(existing),
+					new ArrayList<>(),
+					mentionDTOs,
+					new ArrayList<>()
+				);
+			}
+
+			// それ以外の例外は再スロー
+			appLog.info(
+				"Unexpected error occurred while inserting message. requestId={}",
+				request.requestId()
+			);
+			throw e;
+		}
 
         target.add(
-                "message_id=" + message.getId()
+			"message_id=" + message.getId()
         );
 
         // メンションされたユーザーIDを保持
@@ -296,7 +363,7 @@ public class MessageService{
                 )
         );
 
-	List<MessageMentionEntity> mentions = mentionMapper.findByMessageId(message.getId());
+		List<MessageMentionEntity> mentions = mentionMapper.findByMessageId(message.getId());
         List<MentionResponseDTO> mentionDTOs = mentions.stream()
                 .map(mm -> new MentionResponseDTO(
                         mm.getId(),
@@ -440,6 +507,7 @@ public class MessageService{
                 m.getChannelId(),
                 m.getUserId(),
                 m.getReplyToMessageId(),
+                m.getRequestId(),
                 m.getContent(),
                 m.getStatus(),
                 m.getCreatedAt(),

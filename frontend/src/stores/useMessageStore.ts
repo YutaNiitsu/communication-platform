@@ -30,6 +30,7 @@ export interface Message {
   channelId: number
   userId: number
   replyToMessageId: number | null
+  requestId: string
   content: string
   mentionedUserIds: number[]
   status: number
@@ -117,6 +118,7 @@ export const useMessageStore = defineStore("message", {
             channelId: Number(m.channelId ?? m.channel_id),
             userId: Number(m.userId ?? m.user_id),
             replyToMessageId: (m.replyToMessageId ?? m.reply_to_message_id) ? Number(m.replyToMessageId ?? m.reply_to_message_id) : null,
+            requestId: m.requestId ?? m.request_id ?? '',
             content: m.content,
             mentionedUserIds: m.mentionedUserIds ?? m.mentioned_user_ids ?? [],
             status: m.status ?? 0,
@@ -176,6 +178,7 @@ export const useMessageStore = defineStore("message", {
             id: Number(m.id),
             channelId: Number(m.channelId ?? m.channel_id),
             userId: Number(m.userId ?? m.user_id),
+            requestId: m.requestId ?? m.request_id ?? '',
             replyToMessageId: (m.replyToMessageId ?? m.reply_to_message_id) 
               ? Number(m.replyToMessageId ?? m.reply_to_message_id) 
               : null,
@@ -195,11 +198,12 @@ export const useMessageStore = defineStore("message", {
 
 
     async sendMessage(channelId: number, content: string, replyToMessageId?: number | null,mentionedUserIds: number[] = []) {
-      const res = await MessageClient.postMessage(channelId, content, replyToMessageId,mentionedUserIds)
+      const requestId = this.generateRequestId()
+      const res = await MessageClient.postMessage(channelId, content, requestId, replyToMessageId,mentionedUserIds)
       const m = res && res.message ? res.message : res
       if (!m || !m.id) return
       
-      // 💡 修正: res.id ではなく、確実に抽出した m.id（数値型にキャスト）で重複チェックを行う
+      // 修正: res.id ではなく、確実に抽出した m.id（数値型にキャスト）で重複チェックを行う
       const targetId = Number(m.id)
       const exists = this.messages.some(msg => Number(msg.id) === targetId)
       
@@ -215,10 +219,11 @@ export const useMessageStore = defineStore("message", {
           replyToMessageId: (m.replyToMessageId ?? m.reply_to_message_id) 
             ? Number(m.replyToMessageId ?? m.reply_to_message_id) 
             : null,
+          requestId: m.requestId ?? m.request_id ?? '',
           content: m.content,
           mentionedUserIds: extractedMentions,
           status: m.status ?? 0,
-          // 💡 修正: WebSocket側の日時計算（getTime）と100%シンクロさせるため、ISOString 形式などで確実に揃える
+          // 修正: WebSocket側の日時計算（getTime）と100%シンクロさせるため、ISOString 形式などで確実に揃える
           createdAt: m.createdAt ?? m.created_at ?? new Date().toISOString(),
           updatedAt: m.updatedAt ?? m.updated_at ?? null,
           reactions: [],
@@ -229,6 +234,13 @@ export const useMessageStore = defineStore("message", {
       return m.id
     },
 
+    generateRequestId() {
+      return (
+        Date.now().toString(36) +
+        Math.random().toString(36).substring(2)
+      )
+    },
+    
 
     async updateMessage(messageId: number, content: string, status: number = 0) {
       const res = await MessageClient.updateMessage(messageId, content, status)
@@ -393,6 +405,7 @@ export const useMessageStore = defineStore("message", {
               channelId: Number(m.channelId ?? m.channel_id),
               userId: Number(m.userId ?? m.user_id),
               replyToMessageId: Number(m.replyToMessageId ?? m.reply_to_message_id) || null,
+              requestId: m.requestId ?? m.request_id ?? '',
               content: m.content,
               mentionedUserIds:
                 m.mentionedUserIds ??
@@ -444,6 +457,7 @@ export const useMessageStore = defineStore("message", {
             replyToMessageId: (m.replyToMessageId ?? m.reply_to_message_id)
               ? Number(m.replyToMessageId ?? m.reply_to_message_id)
               : null,
+            requestId: m.requestId ?? m.request_id ?? '',
             content: content,
             mentionedUserIds: (m.mentionedUserIds ?? m.mentioned_user_ids ?? []).map((uid: any) => Number(uid)),
             status: m.status ?? 0,

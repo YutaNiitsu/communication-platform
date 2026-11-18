@@ -39,6 +39,7 @@ CREATE TABLE messages (
     channel_id BIGINT NOT NULL REFERENCES channels(id),
     user_id BIGINT NOT NULL REFERENCES users(id),
     reply_to_message_id BIGINT REFERENCES messages(id),
+    request_id VARCHAR(255) NOT NULL UNIQUE,
     content TEXT NOT NULL,
     status INT NOT NULL CHECK (status IN (0, 1, 2)) DEFAULT 0,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
