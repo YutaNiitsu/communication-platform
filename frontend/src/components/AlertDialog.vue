@@ -1,7 +1,7 @@
 <template>
   <div
     v-if="visible"
-    class="overlay"
+    class="alert-overlay"
   >
     <div
       class="dialog"
@@ -56,29 +56,32 @@ defineEmits<{
 
 <style scoped>
 
-.overlay {
+.alert-overlay {
   position: fixed;
   inset: 0;
+
+  background: rgba(
+    0,
+    0,
+    0,
+    0.4
+  );
 
   display: flex;
   justify-content: center;
   align-items: center;
 
-  background: rgba(0,0,0,0.45);
-
-  z-index: 9999;
+  z-index: 3000;
 }
 
 .dialog {
-  width: 420px;
-
-  padding: 24px;
-
-  border-radius: 12px;
+  width: 600px;
 
   background: white;
 
-  box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+  border-radius: 8px;
+
+  padding: 20px;
 
   color: #333333;
 }

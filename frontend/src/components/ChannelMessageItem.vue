@@ -120,14 +120,7 @@
       showInfoDialog = false
     "
   />
-  <AlertDialog
-    :visible="visible"
-    :title="title"
-    :message="alertMessage"
-    :type="type"
-    @confirm="confirm"
-    @cancel="cancel"
-  />
+  
 </template>
 
 <script setup lang="ts">
@@ -146,20 +139,10 @@ import DOMPurify from "dompurify"
 
 import "highlight.js/styles/github-dark.css"
 
-import AlertDialog from "@/components/AlertDialog.vue"
 import { useAlertDialog } from "@/composables/useAlertDialog"
 
-const {
-  visible,
-  title,
-  message :alertMessage,
-  type,
-  confirm,
-  cancel,
-  showSuccess,
-  showWarning,
-  showError
-} = useAlertDialog()
+const alertDialog = useAlertDialog()
+const { showSuccess, showWarning, showError } = alertDialog
 
 
 const md = new MarkdownIt({
