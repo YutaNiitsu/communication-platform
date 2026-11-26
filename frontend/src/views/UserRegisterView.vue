@@ -82,12 +82,34 @@
       </form>
     </div>
   </div>
+  <AlertDialog
+    :visible="visible"
+    :title="title"
+    :message="message"
+    :type="type"
+    @confirm="confirm"
+    @cancel="cancel"
+  />
 </template>
 
 <script setup lang="ts">
 import { ref, computed, onMounted } from 'vue'
 import { useRoute, useRouter } from 'vue-router'
 import { useUserStore } from '@/stores/useUserStore'
+import AlertDialog from "@/components/AlertDialog.vue"
+import { useAlertDialog } from "@/composables/useAlertDialog"
+
+const {
+  visible,
+  title,
+  message,
+  type,
+  confirm,
+  cancel,
+  showSuccess,
+  //showWarning,
+  showError
+} = useAlertDialog()
 
 const route = useRoute()
 const router = useRouter()
@@ -129,15 +151,15 @@ const handleSubmit = async () => {
   try {
     if (isEditMode.value) {
       await userStore.updateUser(Number(userId.value), form.value)
-      alert('ユーザーを更新しました')
+      showSuccess("ユーザー更新に成功しました", "ユーザーを更新しました。")
     } else {
       await userStore.createUser(form.value)
-      alert('ユーザーを登録しました')
+      showSuccess("ユーザー登録に成功しました", "ユーザーを登録しました。")
     }
     router.push('/users')
   } catch (error) {
     console.error('処理に失敗しました', error)
-    alert('処理に失敗しました')
+    showError("ユーザー登録エラー", "登録処理に失敗しました")
   }
 }
 

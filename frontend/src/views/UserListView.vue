@@ -37,12 +37,34 @@
       </div>
     </div>
   </div>
+  <AlertDialog
+    :visible="visible"
+    :title="title"
+    :message="message"
+    :type="type"
+    @confirm="confirm"
+    @cancel="cancel"
+  />
 </template>
 
 <script setup lang="ts">
 import { onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore, type User } from '@/stores/useUserStore'
+import AlertDialog from "@/components/AlertDialog.vue"
+import { useAlertDialog } from "@/composables/useAlertDialog"
+
+const {
+  visible,
+  title,
+  message,
+  type,
+  confirm,
+  cancel,
+  showSuccess,
+  showWarning,
+  showError
+} = useAlertDialog()
 
 const router = useRouter()
 const userStore = useUserStore()
@@ -85,15 +107,16 @@ const handleUpdate = (user: User) => {
 
 // ユーザー削除処理
 const handleDelete = async (userId: number) => {
-  if (confirm('このユーザーを削除してもよろしいですか？')) {
+  const result = await showWarning("ユーザー削除", 'このユーザーを削除しますか？')
+  if (!result) {
     try {
       await userStore.deleteUser(userId)
-      alert('ユーザーを削除しました')
+      showSuccess("ユーザー削除に成功しました", "ユーザーを削除しました。")
       // 削除完了後に一覧を再取得して画面を最新化
       await fetchUsers()
     } catch (error) {
       console.error('ユーザーの削除に失敗しました', error)
-      alert('削除処理に失敗しました')
+      showError("ユーザー削除エラー", "削除処理に失敗しました")
     }
   }
 }

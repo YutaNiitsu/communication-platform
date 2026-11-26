@@ -91,12 +91,34 @@
       </div>
     </div>
   </div>
+  <AlertDialog
+    :visible="visible"
+    :title="title"
+    :message="message"
+    :type="type"
+    @confirm="confirm"
+    @cancel="cancel"
+  />
 </template>
 
 <script setup lang="ts">
 import { ref, onMounted } from 'vue'
 import { useAuthStore } from '@/stores/useAuthStore'
 import { useMessageTemplateStore } from '@/stores/useMessageTemplateStore'
+import AlertDialog from "@/components/AlertDialog.vue"
+import { useAlertDialog } from "@/composables/useAlertDialog"
+
+const {
+  visible,
+  title,
+  message,
+  type,
+  confirm,
+  cancel,
+  //showSuccess,
+  //showWarning,
+  showError
+} = useAlertDialog()
 
 const props = defineProps<{
   mode: 'create' | 'edit' | 'view'
@@ -139,7 +161,7 @@ function submit() {
   const trimmedContent = form.value.content.trim()
 
   if (!trimmedTitle || !trimmedContent) {
-    alert('タイトルと本文を入力してください')
+    showError("テンプレート作成エラー", "タイトルと本文を入力してください")
     return
   }
 
@@ -155,9 +177,9 @@ function submit() {
 
   if (isDuplicate) {
     if (form.value.isShared) {
-      alert('すでに同じタイトルの「共有テンプレート」が存在します。')
+      showError("テンプレート作成エラー", "すでに同じタイトルの「共有テンプレート」が存在します。")
     } else {
-      alert('すでに同じタイトルの「個人テンプレート」があなたのアカウントに存在します。')
+      showError("テンプレート作成エラー", "すでに同じタイトルの「個人テンプレート」があなたのアカウントに存在します。")
     }
     return
   }

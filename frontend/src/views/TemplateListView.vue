@@ -84,6 +84,14 @@
       @save="handleSaveTemplate"
     />
   </div>
+  <AlertDialog
+    :visible="visible"
+    :title="title"
+    :message="message"
+    :type="type"
+    @confirm="confirm"
+    @cancel="cancel"
+  />
 </template>
 
 <script setup lang="ts">
@@ -92,6 +100,20 @@ import { useAuthStore } from '@/stores/useAuthStore'
 import { useMessageTemplateStore } from '@/stores/useMessageTemplateStore'
 import CategoryManagementModal from '@/components/CategoryManagementModal.vue'
 import TemplateFormModal from '@/components/TemplateFormModal.vue'
+import AlertDialog from "@/components/AlertDialog.vue"
+import { useAlertDialog } from "@/composables/useAlertDialog"
+
+const {
+  visible,
+  title,
+  message,
+  type,
+  confirm,
+  cancel,
+  showSuccess,
+  showWarning,
+  showError
+} = useAlertDialog()
 
 const authStore = useAuthStore()
 const templateStore = useMessageTemplateStore()
@@ -184,16 +206,18 @@ async function handleSaveTemplate(data: any) {
       })
     }
   } catch (e: any) {
-    alert(e.response?.data?.message || '保存に失敗しました')
+    showError("テンプレート保存エラー", e.response?.data?.message || '保存に失敗しました')
   }
 }
 
 async function deleteTemplate(id: number) {
-  if (confirm('本当にこのテンプレートを削除しますか？')) {
+  const result = await showWarning("テンプレート削除", 'このテンプレートを削除しますか？')
+  if (!result) {
     try {
       await templateStore.deleteTemplate(id)
+      showSuccess("テンプレート削除に成功しました", "テンプレートを削除しました。")
     } catch (e: any) {
-      alert(e.response?.data?.message || '削除に失敗しました')
+      showError("テンプレート削除エラー", e.response?.data?.message || '削除に失敗しました')
     }
   }
 }

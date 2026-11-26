@@ -79,16 +79,38 @@
       </div>
     </div>
   </div>
+  <AlertDialog
+    :visible="visible"
+    :title="title"
+    :message="message"
+    :type="type"
+    @confirm="confirm"
+    @cancel="cancel"
+  />
 </template>
 
 <script setup lang="ts">
 import { ref } from 'vue'
 import { useAuthStore } from '@/stores/useAuthStore'
 import { useMessageTemplateStore } from '@/stores/useMessageTemplateStore'
+import AlertDialog from "@/components/AlertDialog.vue"
+import { useAlertDialog } from "@/composables/useAlertDialog"
 
 const emit = defineEmits(['close'])
 const authStore = useAuthStore()
 const templateStore = useMessageTemplateStore()
+
+const {
+  visible,
+  title,
+  message,
+  type,
+  confirm,
+  cancel,
+  //showSuccess,
+  showWarning,
+  showError
+} = useAlertDialog()
 
 // フォームの入力ステート
 const categoryName = ref('')
@@ -122,7 +144,7 @@ async function handleUpdate() {
     })
     resetForm()
   } catch (e: any) {
-    alert(e.response?.data?.message || 'カテゴリの更新に失敗しました')
+    showError("カテゴリの更新エラー", e.response?.data?.message || 'カテゴリの更新に失敗しました')
   }
 }
 
@@ -136,7 +158,7 @@ async function handleRegister() {
     })
     resetForm()
   } catch (e: any) {
-    alert(e.response?.data?.message || 'カテゴリの登録に失敗しました')
+    showError("カテゴリの登録エラー", e.response?.data?.message || 'カテゴリの登録に失敗しました')
   }
 }
 
@@ -148,14 +170,15 @@ function resetForm() {
 }
 
 async function deleteCategory(id: number) {
-  if (confirm('このカテゴリを削除しますか？')) {
+  const result = await showWarning("カテゴリ削除", 'このカテゴリを削除しますか？')
+  if (result) {
     try {
       await templateStore.deleteCategory(id)
       if (editingTargetId.value === id) {
         resetForm()
       }
     } catch (e: any) {
-      alert(e.response?.data?.message || 'カテゴリの削除に失敗しました')
+      showError("カテゴリ削除エラー", e.response?.data?.message || 'カテゴリの削除に失敗しました')
     }
   }
 }

@@ -90,6 +90,14 @@
 
     </div>
   </div>
+  <AlertDialog
+    :visible="visible"
+    :title="title"
+    :message="message"
+    :type="type"
+    @confirm="confirm"
+    @cancel="cancel"
+  />
 </template>
 
 <script setup lang="ts">
@@ -97,6 +105,20 @@ import { ref, computed } from "vue"
 import { useAuthStore } from "@/stores/useAuthStore"
 import { useMemberStore } from "@/stores/useMemberStore"
 import { useChannelStore } from "@/stores/useChannelStore"
+import AlertDialog from "@/components/AlertDialog.vue"
+import { useAlertDialog } from "@/composables/useAlertDialog"
+
+const {
+  visible,
+  title,
+  message,
+  type,
+  confirm,
+  cancel,
+  showSuccess,
+  //showWarning,
+  showError
+} = useAlertDialog()
 
 const props = defineProps<{
   channel: any
@@ -179,7 +201,7 @@ function formatRole(role: any) {
 // ユーザー一括招待
 async function submitInvite() {
   if (selectedUserIds.value.length === 0) {
-    alert("ユーザーを選択してください")
+    showError("ユーザー追加エラー", "ユーザーを選択してください")
     return
   }
 
@@ -189,18 +211,18 @@ async function submitInvite() {
     }
     // ストア側で fetchMembers を呼ぶか、WebSocketで自動追加されるため再取得は任意
     await memberStore.fetchMembers(props.channelId)
-    alert("選択したユーザーを追加しました")
+    showSuccess("ユーザー追加に成功しました", "選択したユーザーを追加しました")
     closeInviteUserAddModal()
     emit("memberUpdated")
   } catch (e: any) {
-    alert(e.message || "招待に失敗しました")
+    showError("ユーザー追加エラー", e.message || "招待に失敗しました")
   }
 }
 
 // チャンネル編集
 async function submitEdit() {
   if (newChannelName.value.length === 0) {
-    alert("チャンネル名を入力してください")
+    showError("チャンネル編集エラー", "チャンネル名を入力してください")
     return
   }
 
@@ -208,12 +230,12 @@ async function submitEdit() {
     // 1. チャンネル編集
     const editChannel = await channelStore.editChannel(props.channelId, newChannelName.value, props.channel.status)
 
-    alert(`チャンネル名を「${editChannel.name}」に変更しました!`)
+    showSuccess("チャンネル編集に成功しました", `チャンネル名を「${editChannel.name}」に変更しました!`)
 
     closeInviteEditModal();
     channelStore.applyWebSocketEvent("channel_updated");
   } catch (e: any) {
-    alert("作成に失敗しました")
+    showError("チャンネル編集エラー", e.message || "作成に失敗しました")
   }
 
 }

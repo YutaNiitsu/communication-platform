@@ -385,6 +385,29 @@ aside,
   flex-shrink: 0;
 }
 
+.drop-area {
+  position: relative;
+}
+
+.drop-area.dragging {
+  border: 2px dashed #1976d2;
+  background-color: #e3f2fd;
+}
+
+.file-row {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.file-name-input {
+  flex: 1;
+}
+
+.extension {
+  color: #666;
+  font-weight: 600;
+}
 
 /* ------------------------------------------------
    4. 各種ポップアップ・サイドバー等の付随スタイル

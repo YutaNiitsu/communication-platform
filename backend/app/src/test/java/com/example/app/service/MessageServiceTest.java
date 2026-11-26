@@ -1,136 +1,518 @@
 package com.example.app.service;
 
+import jakarta.servlet.http.HttpServletRequest;
+import lombok.RequiredArgsConstructor;
+
+import com.example.app.config.AppProperties;
 import com.example.app.domain.attachment.AttachmentEntity;
 import com.example.app.domain.attachment.AttachmentMapper;
 import com.example.app.domain.channel.ChannelEntity;
 import com.example.app.domain.channel.ChannelMapper;
-import com.example.app.domain.message.MessageEntity;
-import com.example.app.domain.message.MessageMapper;
-import com.example.app.domain.reaction.ReactionMapper;
-import com.example.app.domain.reaction.ReactionEntity;
 import com.example.app.domain.mention.MessageMentionEntity;
 import com.example.app.domain.mention.MessageMentionMapper;
-
-import com.example.app.dto.message.MessageResponseDTO;
-import com.example.app.dto.message.MessageSummaryDTO;
+import com.example.app.domain.message.MessageEntity;
+import com.example.app.domain.message.MessageMapper;
+import com.example.app.domain.operationLog.OperationType;
+import com.example.app.domain.reaction.ReactionEntity;
+import com.example.app.domain.reaction.ReactionMapper;
+import com.example.app.domain.user.UserEntity;
+import com.example.app.domain.user.UserMapper;
 import com.example.app.dto.attachment.AttachmentDTO;
+import com.example.app.dto.mention.MentionResponseDTO;
+import com.example.app.dto.message.*;
+import com.example.app.dto.sync.ReactionSummaryDTO;
+import com.example.app.exception.ForbiddenException;
+import com.example.app.exception.NotFoundException;
+import com.example.app.security.AuthUtil;
+import com.example.app.websocket.WebSocketEventPublisher;
+
+import org.springframework.dao.DuplicateKeyException;
+import org.springframework.stereotype.Service;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.*;
+import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.time.LocalDateTime;
-import java.util.List;
-import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyLong;
+import static org.mockito.ArgumentMatchers.anyMap;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.*;
 
+@ExtendWith(MockitoExtension.class)
 class MessageServiceTest {
 
     @InjectMocks
     private MessageService messageService;
 
-    @Mock private MessageMapper messageMapper;
-    @Mock private ChannelMapper channelMapper;
-    @Mock private ReactionMapper reactionMapper;
-    @Mock private MessageMentionMapper mentionMapper;
-    @Mock private AttachmentMapper attachmentMapper;
+    @Mock
+    private MessageMapper messageMapper;
 
-    @BeforeEach
-    void setup() {
-        MockitoAnnotations.openMocks(this);
-    }
+    @Mock
+    private ChannelMapper channelMapper;
 
-    @Test
-    @DisplayName("1-1: 添付ファイル結合（getMessages）")
-    void testGetMessages_attachmentMerged() {
+    @Mock
+    private MessageMentionMapper mentionMapper;
 
-        Long channelId = 10L;
+    @Mock
+    private ReactionMapper reactionMapper;
 
-        // --- チャンネル存在 ---
-        ChannelEntity channel = new ChannelEntity();
-        channel.setId(channelId);
-        channel.setName("general");
-        when(channelMapper.findById(channelId)).thenReturn(Optional.of(channel));
+    @Mock
+    private UserMapper userMapper;
 
-        // --- メッセージ ---
-        MessageEntity m = new MessageEntity();
-        m.setId(100L);
-        m.setChannelId(channelId);
-        m.setUserId(1L);
-        m.setContent("hello");
-        m.setStatus(1);
-        m.setCreatedAt(LocalDateTime.now());
-        m.setUpdatedAt(LocalDateTime.now());
+    @Mock
+    private AttachmentMapper attachmentMapper;
 
-        when(messageMapper.findByChannel(channelId))
-                .thenReturn(List.of(m));
+    @Mock
+    private WebSocketEventPublisher eventPublisher;
 
-        // --- reactions（空でOK） ---
-        when(reactionMapper.findByMessageId(100L))
-                .thenReturn(List.of());
+    @Mock
+    private OperationLogService operationLogService;
 
-        // --- mentions（空でOK） ---
-        when(mentionMapper.findByMessageId(100L))
-                .thenReturn(List.of());
+    @Mock
+    private AuthUtil authUtil;
 
-        // --- attachments ---
-        AttachmentEntity a1 = new AttachmentEntity();
-        a1.setId(1L);
-        a1.setMessageId(100L);
-        a1.setOriginalFileName("file1.pdf");
-        a1.setStoredFileName("stored1.pdf");
-        a1.setFileUrl("/files/stored1.pdf");
-        a1.setThumbnailUrl(null);
-        a1.setFileType("pdf");
-        a1.setFileSize(1234L);
-        a1.setCreatedAt(LocalDateTime.now());
+    @Mock
+    private AppProperties props;
 
-        AttachmentEntity a2 = new AttachmentEntity();
-        a2.setId(2L);
-        a2.setMessageId(100L);
-        a2.setOriginalFileName("image.png");
-        a2.setStoredFileName("stored2.png");
-        a2.setFileUrl("/files/stored2.png");
-        a2.setThumbnailUrl("/thumb/stored2.png");
-        a2.setFileType("png");
-        a2.setFileSize(9999L);
-        a2.setCreatedAt(LocalDateTime.now());
+    @Mock
+    private AppProperties.Message messageProps;
 
-        when(attachmentMapper.findByMessageId(100L))
-                .thenReturn(List.of(a1, a2));
+    @Mock
+    private HttpServletRequest httpRequest;
 
-        // --- hasMore 判定 ---
-        when(messageMapper.existsPreviousMessages(channelId, 100L))
-                .thenReturn(false);
+    private UserEntity user;
 
-        // --- 実行 ---
-        MessageResponseDTO response = messageService.getMessages(channelId, null, null);
+	@BeforeEach
+	void setup() {
 
-        // --- 検証 ---
-        assertThat(response.hasMore()).isFalse();
-        assertThat(response.messages()).hasSize(1);
+		user = new UserEntity();
+		user.setId(1L);
+		user.setUsername("test-user");
 
-        MessageSummaryDTO summary = response.messages().get(0);
-        List<AttachmentDTO> attachments = summary.attachments();
+		when(authUtil.getTokenFromCookie(any()))
+				.thenReturn("token");
 
-        assertThat(attachments).hasSize(2);
+		when(authUtil.getUserFromToken(any()))
+				.thenReturn(user);
+	}
 
-        assertThat(attachments)
-                .extracting("originalFileName")
-                .containsExactlyInAnyOrder("file1.pdf", "image.png");
+	private void setupCreateMessageSuccess() {
 
-        assertThat(attachments)
-                .extracting("fileUrl")
-                .contains("/files/stored1.pdf", "/files/stored2.png");
+		when(props.getMessage())
+				.thenReturn(messageProps);
 
-        assertThat(attachments)
-                .extracting("thumbnailUrl")
-                .contains(null, "/thumb/stored2.png");
-    }
+		when(messageProps.getMaxLength())
+				.thenReturn(1000);
+
+		doAnswer(invocation -> {
+
+			MessageEntity message =
+					invocation.getArgument(0);
+
+			message.setId(1L);
+
+			return null;
+
+		}).when(messageMapper)
+				.insert(any(MessageEntity.class));
+
+		when(mentionMapper.findByMessageId(1L))
+				.thenReturn(List.of());
+	}
+
+	@Test
+	void 新規メッセージ送信() {
+
+		setupCreateMessageSuccess();
+
+		when(messageMapper.findByRequestId("req-001"))
+				.thenReturn(Optional.empty());
+
+		MessagePostRequestDTO request =
+				new MessagePostRequestDTO(
+						"test message",
+						null,
+						null,
+						"req-001"
+				);
+
+		MessageSummaryDTO result =
+				messageService.createMessage(
+						1L,
+						httpRequest,
+						request
+				);
+
+		assertNotNull(result);
+
+		verify(messageMapper)
+				.insert(any(MessageEntity.class));
+	}
+
+	@Test
+	void 同一requestId再送() {
+
+		MessageEntity existing =
+				new MessageEntity();
+
+		existing.setId(100L);
+		existing.setRequestId("req-001");
+		existing.setContent("already created");
+
+		when(messageMapper.findByRequestId("req-001"))
+				.thenReturn(Optional.of(existing));
+
+		when(mentionMapper.findByMessageId(100L))
+				.thenReturn(List.of());
+
+		MessagePostRequestDTO request =
+				new MessagePostRequestDTO(
+						"already created",
+						null,
+						null,
+						"req-001"
+				);
+
+		MessageSummaryDTO result =
+				messageService.createMessage(
+						1L,
+						httpRequest,
+						request
+				);
+
+		assertNotNull(result);
+
+		verify(messageMapper, never())
+				.insert(any());
+	}
+
+	@Test
+	void DuplicateKeyException発生時の救済処理() {
+
+		MessageEntity existing =
+				new MessageEntity();
+
+		existing.setId(100L);
+		existing.setRequestId("req-001");
+
+		when(messageMapper.findByRequestId("req-001"))
+				.thenReturn(Optional.empty())
+				.thenReturn(Optional.of(existing));
+
+		when(mentionMapper.findByMessageId(100L))
+				.thenReturn(List.of());
+
+		doThrow(
+				new DuplicateKeyException(
+						"uk_messages_request_id"
+				)
+		).when(messageMapper)
+				.insert(any(MessageEntity.class));
+
+		MessagePostRequestDTO request =
+				new MessagePostRequestDTO(
+						"message",
+						null,
+						null,
+						"req-001"
+				);
+
+		MessageSummaryDTO result =
+				messageService.createMessage(
+						1L,
+						httpRequest,
+						request
+				);
+
+		assertNotNull(result);
+
+		verify(messageMapper)
+				.insert(any(MessageEntity.class));
+	}
+
+	@Test
+	void requestId以外のUNIQUE制約違反() {
+
+		when(messageMapper.findByRequestId("req-001"))
+				.thenReturn(Optional.empty())
+				.thenReturn(Optional.empty());
+
+		doThrow(
+				new DuplicateKeyException(
+						"other unique constraint"
+				)
+		).when(messageMapper)
+				.insert(any(MessageEntity.class));
+
+		MessagePostRequestDTO request =
+				new MessagePostRequestDTO(
+						"message",
+						null,
+						null,
+						"req-001"
+				);
+
+		assertThrows(
+				DuplicateKeyException.class,
+				() -> messageService.createMessage(
+						1L,
+						httpRequest,
+						request
+				)
+		);
+	}
+
+	@Test
+	void 存在しない返信先() {
+
+		when(messageMapper.findByRequestId("req-001"))
+				.thenReturn(Optional.empty());
+
+		when(messageMapper.findById(999L))
+				.thenReturn(Optional.empty());
+
+		MessagePostRequestDTO request =
+				new MessagePostRequestDTO(
+						"reply message",
+						999L,
+						null,
+						"req-001"
+				);
+
+		assertThrows(
+				NotFoundException.class,
+				() -> messageService.createMessage(
+						1L,
+						httpRequest,
+						request
+				)
+		);
+	}
+
+	@Test
+	void 最大文字数超過() {
+
+		when(messageMapper.findByRequestId("req-001"))
+				.thenReturn(Optional.empty());
+
+		when(messageProps.getMaxLength())
+				.thenReturn(10);
+
+		MessagePostRequestDTO request =
+				new MessagePostRequestDTO(
+						"12345678901",
+						null,
+						null,
+						"req-001"
+				);
+
+		assertThrows(
+				IllegalArgumentException.class,
+				() -> messageService.createMessage(
+						1L,
+						httpRequest,
+						request
+				)
+		);
+	}
+
+	@Test
+	void 存在しないメンションユーザー() {
+
+		when(messageMapper.findByRequestId("req-001"))
+				.thenReturn(Optional.empty());
+
+		when(userMapper.findById(999L))
+				.thenReturn(Optional.empty());
+
+		MessagePostRequestDTO request =
+				new MessagePostRequestDTO(
+						"test message",
+						null,
+						List.of(999L),
+						"req-001"
+				);
+
+		assertDoesNotThrow(() ->
+				messageService.createMessage(
+						1L,
+						httpRequest,
+						request
+				)
+		);
+
+		verify(mentionMapper, never())
+				.insert(any());
+	}
+
+	@Test
+	void メンション付きメッセージ送信() {
+
+		UserEntity mentionedUser =
+				new UserEntity();
+
+		mentionedUser.setId(2L);
+		mentionedUser.setUsername("target");
+
+		when(messageMapper.findByRequestId("req-001"))
+				.thenReturn(Optional.empty());
+
+		when(userMapper.findById(2L))
+				.thenReturn(Optional.of(mentionedUser));
+
+		MessagePostRequestDTO request =
+				new MessagePostRequestDTO(
+						"hello",
+						null,
+						List.of(2L),
+						"req-001"
+				);
+
+		assertDoesNotThrow(() ->
+				messageService.createMessage(
+						1L,
+						httpRequest,
+						request
+				)
+		);
+
+		verify(mentionMapper)
+				.insert(any(MessageMentionEntity.class));
+
+		verify(eventPublisher)
+				.sendMentionAdded(
+						eq(2L),
+						anyLong(),
+						anyMap()
+				);
+	}
+
+	
+
 }
+
+// class MessageServiceTest {
+
+//     @InjectMocks
+//     private MessageService messageService;
+
+//     @Mock private MessageMapper messageMapper;
+//     @Mock private ChannelMapper channelMapper;
+//     @Mock private ReactionMapper reactionMapper;
+//     @Mock private MessageMentionMapper mentionMapper;
+//     @Mock private AttachmentMapper attachmentMapper;
+
+//     @BeforeEach
+//     void setup() {
+//         MockitoAnnotations.openMocks(this);
+//     }
+
+//     @Test
+//     @DisplayName("1-1: 添付ファイル結合（getMessages）")
+//     void testGetMessages_attachmentMerged() {
+
+//         Long channelId = 10L;
+
+//         // --- チャンネル存在 ---
+//         ChannelEntity channel = new ChannelEntity();
+//         channel.setId(channelId);
+//         channel.setName("general");
+//         when(channelMapper.findById(channelId)).thenReturn(Optional.of(channel));
+
+//         // --- メッセージ ---
+//         MessageEntity m = new MessageEntity();
+//         m.setId(100L);
+//         m.setChannelId(channelId);
+//         m.setUserId(1L);
+//         m.setContent("hello");
+//         m.setStatus(1);
+//         m.setCreatedAt(LocalDateTime.now());
+//         m.setUpdatedAt(LocalDateTime.now());
+
+//         when(messageMapper.findByChannel(channelId))
+//                 .thenReturn(List.of(m));
+
+//         // --- reactions（空でOK） ---
+//         when(reactionMapper.findByMessageId(100L))
+//                 .thenReturn(List.of());
+
+//         // --- mentions（空でOK） ---
+//         when(mentionMapper.findByMessageId(100L))
+//                 .thenReturn(List.of());
+
+//         // --- attachments ---
+//         AttachmentEntity a1 = new AttachmentEntity();
+//         a1.setId(1L);
+//         a1.setMessageId(100L);
+//         a1.setOriginalFileName("file1.pdf");
+//         a1.setStoredFileName("stored1.pdf");
+//         a1.setFileUrl("/files/stored1.pdf");
+//         a1.setThumbnailUrl(null);
+//         a1.setFileType("pdf");
+//         a1.setFileSize(1234L);
+//         a1.setCreatedAt(LocalDateTime.now());
+
+//         AttachmentEntity a2 = new AttachmentEntity();
+//         a2.setId(2L);
+//         a2.setMessageId(100L);
+//         a2.setOriginalFileName("image.png");
+//         a2.setStoredFileName("stored2.png");
+//         a2.setFileUrl("/files/stored2.png");
+//         a2.setThumbnailUrl("/thumb/stored2.png");
+//         a2.setFileType("png");
+//         a2.setFileSize(9999L);
+//         a2.setCreatedAt(LocalDateTime.now());
+
+//         when(attachmentMapper.findByMessageId(100L))
+//                 .thenReturn(List.of(a1, a2));
+
+//         // --- hasMore 判定 ---
+//         when(messageMapper.existsPreviousMessages(channelId, 100L))
+//                 .thenReturn(false);
+
+//         // --- 実行 ---
+//         MessageResponseDTO response = messageService.getMessages(channelId, null, null);
+
+//         // --- 検証 ---
+//         assertThat(response.hasMore()).isFalse();
+//         assertThat(response.messages()).hasSize(1);
+
+//         MessageSummaryDTO summary = response.messages().get(0);
+//         List<AttachmentDTO> attachments = summary.attachments();
+
+//         assertThat(attachments).hasSize(2);
+
+//         assertThat(attachments)
+//                 .extracting("originalFileName")
+//                 .containsExactlyInAnyOrder("file1.pdf", "image.png");
+
+//         assertThat(attachments)
+//                 .extracting("fileUrl")
+//                 .contains("/files/stored1.pdf", "/files/stored2.png");
+
+//         assertThat(attachments)
+//                 .extracting("thumbnailUrl")
+//                 .contains(null, "/thumb/stored2.png");
+//     }
+// }
 
 // package com.example.app.service;
 

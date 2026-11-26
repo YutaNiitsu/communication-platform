@@ -35,6 +35,7 @@
           @preview="openPreview"
           @download="downloadFile"
           @delete="deleteFile"
+          @info="showAttachmentInfo"
         />
         <AttachmentPreviewModal
           v-if="previewAttachment"
@@ -109,6 +110,24 @@
 
     </div>
   </li>
+  <AttachmentInfoDialog
+    v-if="
+      showInfoDialog &&
+      selectedAttachment
+    "
+    :attachment="selectedAttachment"
+    @close="
+      showInfoDialog = false
+    "
+  />
+  <AlertDialog
+    :visible="visible"
+    :title="title"
+    :message="alertMessage"
+    :type="type"
+    @confirm="confirm"
+    @cancel="cancel"
+  />
 </template>
 
 <script setup lang="ts">
@@ -119,12 +138,28 @@ import MessageAttachments from "@/components/MessageAttachments.vue"
 import { useMessageStore } from "@/stores/useMessageStore"
 import type { Attachment } from "@/stores/useMessageStore"
 import AttachmentPreviewModal from "@/components/AttachmentPreviewModal.vue"
+import AttachmentInfoDialog from "@/components/AttachmentInfoDialog.vue"
 
 import MarkdownIt from "markdown-it"
 import hljs from "highlight.js"
 import DOMPurify from "dompurify"
 
 import "highlight.js/styles/github-dark.css"
+
+import AlertDialog from "@/components/AlertDialog.vue"
+import { useAlertDialog } from "@/composables/useAlertDialog"
+
+const {
+  visible,
+  title,
+  message :alertMessage,
+  type,
+  confirm,
+  cancel,
+  showSuccess,
+  showWarning,
+  showError
+} = useAlertDialog()
 
 
 const md = new MarkdownIt({
@@ -377,14 +412,22 @@ function downloadFile(att: Attachment) {
 }
 
 function deleteFile(att: Attachment) {
-  const confirmed = confirm(`本当に「${att.originalFileName}」を削除しますか？`)
-  if (confirmed) {
+  const result = showWarning("ファイル削除", `本当に「${att.originalFileName}」を削除しますか？`)
+  if (!result) {
     messageStore.deleteAttachment(att.id).then(() => {
-      alert(`「${att.originalFileName}」を削除しました。`)
+      showSuccess("ファイル削除に成功しました", `「${att.originalFileName}」を削除しました。`)
     }).catch(() => {
-      alert(`「${att.originalFileName}」の削除に失敗しました。`)
+      showError("ファイル削除エラー", `「${att.originalFileName}」の削除に失敗しました。`)
     })
   }
+}
+
+const selectedAttachment = ref<any | null>(null)
+const showInfoDialog = ref(false)
+
+function showAttachmentInfo(att: Attachment) {
+  selectedAttachment.value = att
+  showInfoDialog.value = true
 }
 
 // function downloadThumbnail(att: Attachment) {

@@ -52,7 +52,7 @@ public class AttachmentService {
     private static final Logger appLog = LoggerFactory.getLogger("APP_LOG");
 
 
-    public AttachmentDTO uploadAttachment(Long messageId, MultipartFile file, HttpServletRequest httpRequest) {
+    public AttachmentDTO uploadAttachment(Long messageId, MultipartFile file, String originalFileName, HttpServletRequest httpRequest) {
         String token = authUtil.getTokenFromCookie(httpRequest);
         UserEntity requestUser = authUtil.getUserFromToken(token);
 
@@ -71,7 +71,7 @@ public class AttachmentService {
         }
 
         // 2. 拡張子・MIMEチェック
-        String originalName = file.getOriginalFilename();
+        String originalName = originalFileName != null ? originalFileName : file.getOriginalFilename();
         if (originalName == null || !originalName.contains(".")) {
             appLog.warn("File must have extension: " + originalName);
             throw new IllegalArgumentException("File must have extension");

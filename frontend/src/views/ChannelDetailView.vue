@@ -166,21 +166,28 @@
               </li>
             </ul>
           </div>
+          <div
+            class="drop-area"
+            :class="{ dragging: isDragging }"
+            @dragenter="onDragEnter"
+            @dragleave="onDragLeave"
+            @dragover="onDragOver"
+            @drop="onDrop"
+          >
+            <textarea 
+              ref="textareaRef"
+              v-model="newMessage" 
+              @beforeinput="handleBeforeInput"
+              @input="handleInput"
+              @click="handleMentionCursorMove"
+              @keyup="handleMentionCursorMove"
+              @keydown="handleMarkdownEnter"
+              placeholder="メッセージを入力" 
+              required 
+              :maxlength="configStore.config!.message.maxLength"
+            ></textarea>
+          </div>
 
-          <textarea 
-            ref="textareaRef"
-            v-model="newMessage" 
-            @beforeinput="handleBeforeInput"
-            @input="handleInput"
-            @click="handleMentionCursorMove"
-            @keyup="handleMentionCursorMove"
-            @keydown="handleMarkdownEnter"
-            placeholder="メッセージを入力" 
-            required 
-            :maxlength="configStore.config!.message.maxLength"
-          ></textarea>
-
-          <!-- 送信前添付ファイル一覧 -->
           <!-- 送信前添付ファイル一覧 -->
           <div v-if="selectedFiles.length > 0" class="pre-attachment-list">
             <div
@@ -201,7 +208,16 @@
                 :filename="item.name"
               />
 
-              <span class="pre-attachment-name">{{ item.name }}</span>
+              <!-- ファイル名編集用の input -->
+              <input
+                :value="item.baseName"
+                @input="onFileNameInput($event, item)"
+                class="file-name-input"
+              />
+
+              <span class="extension">
+                {{ item.extension }}
+              </span>
 
               <button class="pre-attachment-remove" @click="removeSelectedFile(item)">
                 ☒
@@ -348,8 +364,16 @@
       </div>
     </div>
   </div>
+  
+  <AlertDialog
+    :visible="visible"
+    :title="title"
+    :message="message"
+    :type="type"
+    @confirm="confirm"
+    @cancel="cancel"
+  />
 </template>
-
 <script setup lang="ts">
 import { ref, onMounted, onUnmounted, computed, watch, nextTick } from "vue"
 import { useRoute, useRouter } from "vue-router"
@@ -362,9 +386,11 @@ import { useMessageTemplateStore } from "@/stores/useMessageTemplateStore"
 import ChannelInfoModal from "@/components/ChannelInfoModal.vue"
 import ChannelMessageItem from "@/components/ChannelMessageItem.vue"
 import ChannelThreadSidebar from "@/components/ChannelThreadSidebar.vue"
+import AlertDialog from "@/components/AlertDialog.vue"
 import { getUserColor } from "@/utils/Utils"
 import FileTypeIcon from '@/components/FileTypeIcon.vue'
 import { useConfigStore } from "@/stores/useConfigStore"
+import { useAlertDialog } from "@/composables/useAlertDialog"
 
 import { Picker, EmojiIndex } from "emoji-mart-vue-fast/src"
 import data from "emoji-mart-vue-fast/data/apple.json"
@@ -415,6 +441,19 @@ type SelectedMention = {
 
 const selectedMentions = ref<SelectedMention[]>([])
 const previousMessage = ref("")
+
+const {
+  visible,
+  title,
+  message,
+  type,
+  confirm,
+  cancel,
+  //showSuccess,
+  showWarning,
+  showError
+} = useAlertDialog()
+
 
 // ==========================================
 // フォームのレイアウト・制限設定
@@ -554,7 +593,7 @@ async function toggleReaction(messageId: number, emoji: string) {
     }
   } catch (e: any) {
     console.error("リアクションの更新に失敗しました", e)
-    alert(e.response?.data?.message || "リアクションの処理に失敗しました。")
+    showWarning("リアクション", e.response?.data?.message || "リアクションの処理に失敗しました。")
   }
 }
 
@@ -615,7 +654,7 @@ function closeThread() {
 async function submitThreadReply(replyContent: string) {
   if (!authStore.user || !activeThreadMessage.value) return
   if (replyContent.length > configStore.config!.message.maxLength) {
-    alert(`メッセージは${configStore.config!.message.maxLength}文字以内で入力してください。`)
+    showWarning("メッセージ", `メッセージは${configStore.config!.message.maxLength}文字以内で入力してください。`)
     return
   }
 
@@ -626,7 +665,7 @@ async function submitThreadReply(replyContent: string) {
       activeThreadMessage.value.id
     )
   } catch (e: any) {
-    alert(e.message || "返信の送信に失敗しました")
+    showWarning("メッセージ", e.message || "返信の送信に失敗しました")
   }
 }
 
@@ -1056,6 +1095,16 @@ onMounted(async () => {
   if (route.query.highlightMessageId) {
     await scrollToTargetMessage(Number(route.query.highlightMessageId))
   }
+
+  window.addEventListener(
+    "dragover",
+    preventDefault
+  )
+
+  window.addEventListener(
+    "drop",
+    preventDefault
+  )
 })
 
 onUnmounted(() => {
@@ -1063,6 +1112,16 @@ onUnmounted(() => {
   if (messageList.value) {
     messageList.value.removeEventListener('scroll', handleScroll)
   }
+  
+  window.removeEventListener(
+    "dragover",
+    preventDefault
+  )
+
+  window.removeEventListener(
+    "drop",
+    preventDefault
+  )
 })
 
 async function submitMessage() {
@@ -1073,7 +1132,7 @@ async function submitMessage() {
   }
 
   if (newMessage.value.length > configStore.config!.message.maxLength) {
-    alert(`メッセージは${configStore.config!.message.maxLength}文字以内で入力してください。`)
+    showWarning("メッセージ", `メッセージは${configStore.config!.message.maxLength}文字以内で入力してください。`)
     return
   }
 
@@ -1087,22 +1146,25 @@ async function submitMessage() {
       usage.usagePercent >=
       configStore.config!.storage.deleteThresholdPercent
     ) {
-      alert(
+      await showError(
+        "ストレージ使用率警告",
         "ストレージ使用率が上限に達しているため添付ファイルをアップロードできません。"
       )
       return
     }
 
     if (
-      usage.usagePercent >=
-      configStore.config!.storage.warnThresholdPercent
+      // usage.usagePercent >=
+      // configStore.config!.storage.warnThresholdPercent
+      true // ※テスト用に常に警告を出す
     ) {
-      const confirmed = confirm(
-        `ストレージ使用率が${usage.usagePercent}%です。\n` +
-        "このままアップロードしますか？"
+      const result = await showWarning(
+        "ストレージ使用率警告",
+        `ストレージ使用率が${usage}%です。
+      このままアップロードしますか？`
       )
 
-      if (!confirmed) {
+      if (!result) {
         return
       }
     }
@@ -1153,7 +1215,7 @@ async function submitMessage() {
 async function saveEdit() {
   if (!editContent.value.trim()) return
   if (editContent.value.length > configStore.config!.message.maxLength) {
-    alert(`メッセージは${configStore.config!.message.maxLength}文字以内で入力してください。`)
+    showWarning("メッセージ", `メッセージは${configStore.config!.message.maxLength}文字以内で入力してください。`)
     return
   }
   await messageStore.updateMessage(editingMessage.value.id, editContent.value, 0)
@@ -1170,7 +1232,11 @@ function cancelEdit() {
 }
 
 async function deleteMessage(id: number) {
-  if (!confirm("本当にこのメッセージを削除しますか？")) return
+  const result = await showWarning(
+    "メッセージ削除確認",
+    "本当にこのメッセージを削除しますか？"
+  )
+  if (!result) return
   await messageStore.deleteMessage(id)
 }
 
@@ -1186,29 +1252,37 @@ function scrollToBottom(force = false) {
 }
 
 async function leaveChannel() {
-  if (!confirm("このチャンネルから退出しますか？")) return
+  const result = await showWarning(
+    "チャンネル退出確認",
+    "このチャンネルから退出しますか？"
+  )
+  if (!result) return
   if (!authStore.user) {
-    alert("ユーザー情報が取得できません。")
+    showWarning("チャンネル退出", "ユーザー情報が取得できません。")
     return
   }
 
   try {
     await memberStore.leaveChannel(channelId.value, authStore.user.userId)
-    alert("チャンネルから退出しました。")
+    showWarning("チャンネル退出", "チャンネルから退出しました。")
     router.push("/home")
   } catch (e: any) {
-    alert(e.response?.data?.message || "チャンネルからの退出に失敗しました。")
+    showWarning("チャンネル退出", e.response?.data?.message || "チャンネルからの退出に失敗しました。")
   }
 }
 
 async function deleteChannel() {
-  if (!confirm("本当にこのチャンネルを削除しますか？")) return
+  const result = await showWarning(
+    "チャンネル削除確認",
+    "本当にこのチャンネルを削除しますか？"
+  )
+  if (!result) return
   try {
     await channelStore.deleteChannel(channelId.value)
-    alert("チャンネルを削除しました。")
+    showWarning("チャンネル削除", "チャンネルを削除しました。")
     router.push("/home")
   } catch (e: any) {
-    alert(e.response?.data?.message || "チャンネルの削除に失敗しました。")
+    showWarning("チャンネル削除", e.response?.data?.message || "チャンネルの削除に失敗しました。")
   }
 }
 
@@ -1219,7 +1293,7 @@ async function editChannel() {
 async function archiveChannel() {
   const currentCh = channelStore.currentChannel
   if (!currentCh) {
-    alert("チャンネル情報の取得に失敗しました。")
+    showWarning("チャンネルアーカイブ", "チャンネル情報の取得に失敗しました。")
     return
   }
 
@@ -1227,16 +1301,20 @@ async function archiveChannel() {
   const actionText = isArchived ? 'アーカイブ解除' : 'アーカイブ化'
   const nextStatus = isArchived ? 0 : 1
 
-  if (!confirm(`このチャンネルを${actionText}しますか？`)) return
-  
+  const result = await showWarning(
+    "チャンネルアーカイブ確認",
+    `このチャンネルを${actionText}しますか？`
+  )
+  if (!result) return
+
   try {
     // 💡 リクエストを送信
     await channelStore.editChannel(Number(channelId.value), currentCh.name, nextStatus)
-    alert(`チャンネルを${actionText}しました。`)
+    showWarning("チャンネルアーカイブ", `チャンネルを${actionText}しました。`)
     router.push("/home")
   } catch (e: any) {
     console.error("アーカイブエラー詳細:", e.response?.data)
-    alert(e.response?.data?.message || `チャンネルの${actionText}に失敗しました。`)
+    showWarning("チャンネルアーカイブ", e.response?.data?.message || `チャンネルの${actionText}に失敗しました。`)
   }
 }
 
@@ -2067,10 +2145,43 @@ function selectPlusItem(type: 'file' | 'template') {
   togglePlusMenu()
 }
 
-function handleFileSelected(e: Event) {
-  const files = (e.target as HTMLInputElement).files
-  if (!files || files.length === 0) return
+interface SelectedAttachment {
+  file: File
+  baseName: string
+  extension: string
+}
 
+
+function createAttachment(
+  file: File
+): SelectedAttachment {
+
+  const lastDot =
+    file.name.lastIndexOf(".")
+
+  if (lastDot === -1) {
+
+    return {
+      file,
+      baseName: file.name,
+      extension: ""
+    }
+  }
+
+  return {
+    file,
+    baseName: file.name.substring(
+      0,
+      lastDot
+    ),
+    extension: file.name.substring(
+      lastDot
+    )
+  }
+}
+
+// ファイル追加処理
+function addFiles(files: File[]) {
   // -----------------------------
   // 添付数チェック（最大10個）
   // -----------------------------
@@ -2080,7 +2191,7 @@ function handleFileSelected(e: Event) {
     selectedFiles.value.length + files.length >
     MAX_FILE_COUNT
   ) {
-    alert(`添付できるファイルは最大${MAX_FILE_COUNT}個までです。`)
+    showWarning("ファイル添付", `添付できるファイルは最大${MAX_FILE_COUNT}個までです。`)
     return
   }
 
@@ -2098,7 +2209,7 @@ function handleFileSelected(e: Event) {
     }
 
     if (!ext || !allowedExt.includes(ext)) {
-      alert(`このファイル形式（.${ext}）は添付できません。`)
+      showWarning("ファイル添付", `このファイル形式（.${ext}）は添付できません。`)
       continue
     }
 
@@ -2107,7 +2218,7 @@ function handleFileSelected(e: Event) {
     // -----------------------------
     const MAX_FILE_SIZE = 30 * 1024 * 1024 // 30MB
     if (file.size > MAX_FILE_SIZE) {
-      alert("1ファイルの上限（30MB）を超えています。")
+      showWarning("ファイル添付", "1ファイルの上限（30MB）を超えています。")
       continue
     }
 
@@ -2118,21 +2229,31 @@ function handleFileSelected(e: Event) {
     const currentTotal = selectedFiles.value.reduce((sum, f) => sum + f.file.size, 0)
 
     if (currentTotal + file.size > MAX_TOTAL_SIZE) {
-      alert("添付ファイルの合計サイズが上限（150MB）を超えています。")
+      showWarning("ファイル添付", "添付ファイルの合計サイズが上限（150MB）を超えています。")
       continue
     }
 
     // -----------------------------
     // ④ 添付ファイルリストに追加
     // -----------------------------
+    const attachment = createAttachment(file)
     selectedFiles.value.push({
       file: file,
-      name: file.name,
+      baseName: attachment.baseName,
+      extension: attachment.extension,
       previewUrl: file.type.startsWith("image/")
         ? URL.createObjectURL(file)
         : null
     })
   }
+}
+
+function handleFileSelected(e: Event) {
+  const files = (e.target as HTMLInputElement).files
+  if (!files || files.length === 0) return
+  
+  addFiles(Array.from(files))
+  
   ;(e.target as HTMLInputElement).value = ""
   showPlusMenu.value = false
   activePlusItem.value = null
@@ -2151,16 +2272,104 @@ async function uploadAttachments(
     try {
       await messageStore.uploadAttachment(
         messageId,
-        item.file
+        item
       )
     } catch (err) {
       console.error(
         "添付ファイルアップロード失敗:",
-        item.name,
+        item.file.name,
         err
       )
+      showError("ファイル添付", "添付ファイルのアップロードに失敗しました。")
     }
   }
+}
+
+const isDragging = ref(false)
+
+function onDragOver(event: DragEvent) {
+  event.preventDefault()
+}
+
+function onDragEnter(event: DragEvent) {
+  event.preventDefault()
+
+  isDragging.value = true
+}
+
+function onDragLeave(event: DragEvent) {
+  event.preventDefault()
+
+  isDragging.value = false
+}
+
+function onDrop(event: DragEvent) {
+
+  event.preventDefault()
+
+  isDragging.value = false
+
+  const items =
+    event.dataTransfer?.items
+
+  if (!items) {
+    return
+  }
+
+  for (const item of items) {
+
+    const entry =
+      (item as any)
+        .webkitGetAsEntry?.()
+
+    if (entry?.isDirectory) {
+
+      showWarning(
+        "フォルダは添付できません",
+        "ファイルを選択してください。"
+      )
+
+      return
+    }
+  }
+
+  const files =
+    Array.from(
+      event.dataTransfer.files
+    )
+
+  addFiles(files)
+}
+
+function preventDefault(
+  event: DragEvent
+) {
+  event.preventDefault()
+}
+
+function sanitizeFileName(
+  value: string
+): string {
+
+  return value
+    .replace(
+      /[\\/:*?"<>|]/g,
+      ""
+    )
+    .replace(/\s+/g, " ")
+    .trim()
+}
+
+function onFileNameInput(
+  event: Event,
+  attachment: SelectedAttachment
+) {
+
+  attachment.baseName =
+    sanitizeFileName(
+      (event.target as HTMLInputElement)
+        .value
+    )
 }
 
 

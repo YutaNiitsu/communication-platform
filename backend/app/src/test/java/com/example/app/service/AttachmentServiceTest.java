@@ -191,6 +191,7 @@ class AttachmentServiceTest {
                 attachmentService.uploadAttachment(
                         1L,
                         file,
+                        "test.pdf",
                         request
                 )
         );
@@ -217,6 +218,7 @@ class AttachmentServiceTest {
                 () -> attachmentService.uploadAttachment(
                         1L,
                         file,
+                        "test.pdf",
                         request
                 )
         );
@@ -239,6 +241,7 @@ class AttachmentServiceTest {
                 attachmentService.uploadAttachment(
                         1L,
                         file,
+                        "test.pdf",
                         request
                 )
         );
@@ -262,6 +265,7 @@ class AttachmentServiceTest {
                 () -> attachmentService.uploadAttachment(
                         1L,
                         file,
+                        "test.pdf",
                         request
                 )
         );
@@ -285,6 +289,7 @@ class AttachmentServiceTest {
                 () -> attachmentService.uploadAttachment(
                         1L,
                         file,
+                        "test.pdf",
                         request
                 )
         );
@@ -311,6 +316,7 @@ class AttachmentServiceTest {
                 () -> attachmentService.uploadAttachment(
                         1L,
                         file,
+                        "test.pdf",
                         request
                 )
         );
@@ -334,6 +340,7 @@ class AttachmentServiceTest {
                 () -> attachmentService.uploadAttachment(
                         1L,
                         file,
+                        "test.pdf",
                         request
                 )
         );
@@ -362,6 +369,7 @@ class AttachmentServiceTest {
                 attachmentService.uploadAttachment(
                         1L,
                         file,
+                        "test.pdf",
                         request
                 )
         );
@@ -387,6 +395,7 @@ class AttachmentServiceTest {
                 attachmentService.uploadAttachment(
                         1L,
                         file,
+                        "test.pdf",
                         request
                 )
         );

@@ -3,23 +3,31 @@
     v-if="visible"
     class="overlay"
   >
-    <div class="dialog">
-      <h3>{{ title }}</h3>
+    <div
+      class="dialog"
+      :class="type"
+    >
+      <h3>
+        {{ title }}
+      </h3>
 
-      <p>{{ message }}</p>
+      <p>
+        {{ message }}
+      </p>
 
       <div class="actions">
 
         <button
+          v-if="type === 'warning'"
           class="cancel-btn"
-          @click="cancel"
+          @click="$emit('cancel')"
         >
           キャンセル
         </button>
 
         <button
           class="ok-btn"
-          @click="confirm"
+          @click="$emit('confirm')"
         >
           OK
         </button>
@@ -35,20 +43,14 @@ defineProps<{
   visible: boolean
   title: string
   message: string
+  type?: "success" | "warning" | "error"
+  showCancel?: boolean
 }>()
 
-const emit = defineEmits<{
+defineEmits<{
   confirm: []
   cancel: []
 }>()
-
-function confirm() {
-  emit("confirm")
-}
-
-function cancel() {
-  emit("cancel")
-}
 
 </script>
 
@@ -58,33 +60,39 @@ function cancel() {
   position: fixed;
   inset: 0;
 
-  background: rgba(0, 0, 0, 0.4);
-
   display: flex;
   justify-content: center;
   align-items: center;
+
+  background: rgba(0,0,0,0.45);
 
   z-index: 9999;
 }
 
 .dialog {
-  width: 400px;
-
-  background: white;
-
-  border-radius: 8px;
+  width: 420px;
 
   padding: 24px;
 
-  box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+  border-radius: 12px;
+
+  background: white;
+
+  box-shadow: 0 4px 16px rgba(0,0,0,0.2);
+
+  color: #333333;
 }
 
-.dialog h3 {
-  margin-bottom: 16px;
+.dialog.success {
+  border-top: 6px solid #4caf50;
 }
 
-.dialog p {
-  white-space: pre-line;
+.dialog.warning {
+  border-top: 6px solid #ff9800;
+}
+
+.dialog.error {
+  border-top: 6px solid #f44336;
 }
 
 .actions {
@@ -103,11 +111,14 @@ function cancel() {
 .ok-btn {
   padding: 8px 16px;
 
+  border: none;
+
+  border-radius: 4px;
+
   background: #1976d2;
   color: white;
 
-  border: none;
-  border-radius: 4px;
+  cursor: pointer;
 }
 
 </style>

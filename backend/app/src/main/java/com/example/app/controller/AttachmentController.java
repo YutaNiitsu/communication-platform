@@ -34,9 +34,10 @@ public class AttachmentController {
     public ResponseEntity<AttachmentDTO> upload(
         @PathVariable Long messageId,
         @RequestParam("file") MultipartFile file,
+        @RequestParam(name = "originalFileName", required = false) String originalFileName,
         HttpServletRequest httpRequest
     ) {
-        AttachmentDTO attachment = attachmentService.uploadAttachment(messageId, file, httpRequest);
+        AttachmentDTO attachment = attachmentService.uploadAttachment(messageId, file, originalFileName, httpRequest);
         return ResponseEntity.ok(attachment);
     }
 

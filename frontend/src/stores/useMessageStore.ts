@@ -329,11 +329,13 @@ export const useMessageStore = defineStore("message", {
       }
     },
 
-    async uploadAttachment(messageId: number, file: File) {
+    async uploadAttachment(messageId: number, file: any) {
+
+      
       const res = await AttachmentClient.upload(messageId, file)
 
       // --- 動作確認用に遅延を入れる（本番では不要） ---
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await new Promise(resolve => setTimeout(resolve, 500));
 
       const att = res.attachment || res
       const targetMsg = this.messages.find(m => m.id === Number(att.message_id))
