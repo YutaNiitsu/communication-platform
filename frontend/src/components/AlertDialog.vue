@@ -16,6 +16,12 @@
       </p>
 
       <div class="actions">
+        <button
+          class="ok-btn"
+          @click="$emit('confirm')"
+        >
+          OK
+        </button>
 
         <button
           v-if="type === 'warning'"
@@ -24,14 +30,7 @@
         >
           キャンセル
         </button>
-
-        <button
-          class="ok-btn"
-          @click="$emit('confirm')"
-        >
-          OK
-        </button>
-
+        
       </div>
     </div>
   </div>
