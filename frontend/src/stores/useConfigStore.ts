@@ -1,7 +1,7 @@
 // src/stores/ConfigStore.ts
 import { defineStore } from "pinia"
 import { ConfigClient } from "@/clients/ConfigClient"
-import type { AppConfig } from "@/types/config"
+import type { AppConfig } from "@/types/Config"
 
 export const useConfigStore = defineStore("config", {
   state: () => ({

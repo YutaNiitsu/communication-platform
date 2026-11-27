@@ -387,7 +387,7 @@ import ChannelInfoModal from "@/components/ChannelInfoModal.vue"
 import ChannelMessageItem from "@/components/ChannelMessageItem.vue"
 import ChannelThreadSidebar from "@/components/ChannelThreadSidebar.vue"
 import AlertDialog from "@/components/AlertDialog.vue"
-import { getUserColor } from "@/utils/Utils"
+import { getUserColor } from "@/utils/Color"
 import FileTypeIcon from '@/components/FileTypeIcon.vue'
 import { useConfigStore } from "@/stores/useConfigStore"
 import { useAlertDialog } from "@/composables/useAlertDialog"

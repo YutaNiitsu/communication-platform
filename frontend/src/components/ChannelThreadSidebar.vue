@@ -102,7 +102,7 @@
 
 <script setup lang="ts">
 import { ref, computed, onMounted, onUnmounted } from "vue"
-import { getUserColor } from "@/utils/Utils"
+import { getUserColor } from "@/utils/Color"
 import ChannelMessageItem from "@/components/ChannelMessageItem.vue"
 import { useAuthStore } from "@/stores/useAuthStore"
 

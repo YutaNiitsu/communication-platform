@@ -49,7 +49,7 @@
 import { ref } from "vue"
 import { useRouter } from "vue-router"
 import { useAuthStore } from "@/stores/useAuthStore"
-import { getUserColor } from "@/utils/Utils"
+import { getUserColor } from "@/utils/Color"
 
 const router = useRouter()
 const authStore = useAuthStore()

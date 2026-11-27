@@ -3,43 +3,10 @@ import { defineStore } from "pinia"
 import { MessageClient } from "@/clients/MessageClient"
 import { ReactionClient } from "@/clients/ReactionClient"
 import { AttachmentClient } from "@/clients/AttachmentClient"
+import type { Attachment } from "@/types/Attachment"
+import type { Message, Reaction } from "@/types/Message"
 
-export interface ReactionUser {
-  userId: number
-}
 
-export interface Reaction {
-  emoji: string
-  users: number[] // ユーザーIDの配列
-}
-
-export interface Attachment {
-  id: number
-  messageId: number
-  originalFileName: string
-  storedFileName: string
-  fileSize: number
-  fileType: string
-  fileUrl: string
-  thumbnailUrl: string | null
-  createdAt: string
-}
-
-export interface Message {
-  id: number
-  channelId: number
-  userId: number
-  replyToMessageId: number | null
-  requestId: string
-  content: string
-  mentionedUserIds: number[]
-  status: number
-  createdAt: string
-  updatedAt: string | null
-  deletedFlag?: boolean
-  reactions?: Reaction[]
-  attachments?: Attachment[]
-}
 
 export const useMessageStore = defineStore("message", {
   state: () => ({
@@ -203,7 +170,7 @@ export const useMessageStore = defineStore("message", {
       const m = res && res.message ? res.message : res
       if (!m || !m.id) return
       
-      // 修正: res.id ではなく、確実に抽出した m.id（数値型にキャスト）で重複チェックを行う
+      // res.id ではなく、確実に抽出した m.id（数値型にキャスト）で重複チェックを行う
       const targetId = Number(m.id)
       const exists = this.messages.some(msg => Number(msg.id) === targetId)
       
@@ -213,7 +180,7 @@ export const useMessageStore = defineStore("message", {
           : mentionedUserIds.map((id: any) => Number(id))
           
         this.messages.unshift({
-          id: targetId, // 💡 キャスト済みのIDを使用
+          id: targetId, // キャスト済みのIDを使用
           channelId: Number(m.channelId ?? m.channel_id ?? channelId),
           userId: Number(m.userId ?? m.user_id),
           replyToMessageId: (m.replyToMessageId ?? m.reply_to_message_id) 

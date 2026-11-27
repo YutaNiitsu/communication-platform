@@ -58,7 +58,7 @@
 <script setup lang="ts">
 import { ref, watch } from "vue"
 import FileTypeIcon from "./FileTypeIcon.vue"
-import type { Attachment } from "@/stores/useMessageStore.ts"
+import type { Attachment } from "@/types/Attachment"
 
 const props = defineProps<{
   attachments: Attachment[]
