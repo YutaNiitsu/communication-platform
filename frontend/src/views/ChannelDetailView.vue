@@ -449,7 +449,7 @@ const {
   type,
   confirm,
   cancel,
-  //showSuccess,
+  showSuccess,
   showWarning,
   showError
 } = useAlertDialog()
@@ -1132,7 +1132,7 @@ async function submitMessage() {
   }
 
   if (newMessage.value.length > configStore.config!.message.maxLength) {
-    showWarning("メッセージ", `メッセージは${configStore.config!.message.maxLength}文字以内で入力してください。`)
+    showError("メッセージ", `メッセージは${configStore.config!.message.maxLength}文字以内で入力してください。`)
     return
   }
 
@@ -1160,7 +1160,7 @@ async function submitMessage() {
     ) {
       const result = await showWarning(
         "ストレージ使用率警告",
-        `ストレージ使用率が${usage}%です。
+        `ストレージ使用率が${usage.usagePercent}%です。
       このままアップロードしますか？`
       )
 
@@ -1215,7 +1215,7 @@ async function submitMessage() {
 async function saveEdit() {
   if (!editContent.value.trim()) return
   if (editContent.value.length > configStore.config!.message.maxLength) {
-    showWarning("メッセージ", `メッセージは${configStore.config!.message.maxLength}文字以内で入力してください。`)
+    showError("メッセージ", `メッセージは${configStore.config!.message.maxLength}文字以内で入力してください。`)
     return
   }
   await messageStore.updateMessage(editingMessage.value.id, editContent.value, 0)
@@ -1258,16 +1258,16 @@ async function leaveChannel() {
   )
   if (!result) return
   if (!authStore.user) {
-    showWarning("チャンネル退出", "ユーザー情報が取得できません。")
+    showError("チャンネル退出", "ユーザー情報が取得できません。")
     return
   }
 
   try {
     await memberStore.leaveChannel(channelId.value, authStore.user.userId)
-    showWarning("チャンネル退出", "チャンネルから退出しました。")
+    showSuccess("チャンネル退出", "チャンネルから退出しました。")
     router.push("/home")
   } catch (e: any) {
-    showWarning("チャンネル退出", e.response?.data?.message || "チャンネルからの退出に失敗しました。")
+    showError("チャンネル退出", e.response?.data?.message || "チャンネルからの退出に失敗しました。")
   }
 }
 
@@ -1279,10 +1279,10 @@ async function deleteChannel() {
   if (!result) return
   try {
     await channelStore.deleteChannel(channelId.value)
-    showWarning("チャンネル削除", "チャンネルを削除しました。")
+    showSuccess("チャンネル削除", "チャンネルを削除しました。")
     router.push("/home")
   } catch (e: any) {
-    showWarning("チャンネル削除", e.response?.data?.message || "チャンネルの削除に失敗しました。")
+    showError("チャンネル削除", e.response?.data?.message || "チャンネルの削除に失敗しました。")
   }
 }
 
@@ -1293,7 +1293,7 @@ async function editChannel() {
 async function archiveChannel() {
   const currentCh = channelStore.currentChannel
   if (!currentCh) {
-    showWarning("チャンネルアーカイブ", "チャンネル情報の取得に失敗しました。")
+    showError("チャンネルアーカイブ", "チャンネル情報の取得に失敗しました。")
     return
   }
 
@@ -1310,11 +1310,11 @@ async function archiveChannel() {
   try {
     // 💡 リクエストを送信
     await channelStore.editChannel(Number(channelId.value), currentCh.name, nextStatus)
-    showWarning("チャンネルアーカイブ", `チャンネルを${actionText}しました。`)
+    showSuccess("チャンネルアーカイブ", `チャンネルを${actionText}しました。`)
     router.push("/home")
   } catch (e: any) {
     console.error("アーカイブエラー詳細:", e.response?.data)
-    showWarning("チャンネルアーカイブ", e.response?.data?.message || `チャンネルの${actionText}に失敗しました。`)
+    showError("チャンネルアーカイブ", e.response?.data?.message || `チャンネルの${actionText}に失敗しました。`)
   }
 }
 
@@ -2209,7 +2209,7 @@ function addFiles(files: File[]) {
     }
 
     if (!ext || !allowedExt.includes(ext)) {
-      showWarning("ファイル添付", `このファイル形式（.${ext}）は添付できません。`)
+      showError("ファイル添付", `このファイル形式（.${ext}）は添付できません。`)
       continue
     }
 
@@ -2218,7 +2218,7 @@ function addFiles(files: File[]) {
     // -----------------------------
     const MAX_FILE_SIZE = 30 * 1024 * 1024 // 30MB
     if (file.size > MAX_FILE_SIZE) {
-      showWarning("ファイル添付", "1ファイルの上限（30MB）を超えています。")
+      showError("ファイル添付", "1ファイルの上限（30MB）を超えています。")
       continue
     }
 
@@ -2229,7 +2229,7 @@ function addFiles(files: File[]) {
     const currentTotal = selectedFiles.value.reduce((sum, f) => sum + f.file.size, 0)
 
     if (currentTotal + file.size > MAX_TOTAL_SIZE) {
-      showWarning("ファイル添付", "添付ファイルの合計サイズが上限（150MB）を超えています。")
+      showError("ファイル添付", "添付ファイルの合計サイズが上限（150MB）を超えています。")
       continue
     }
 
@@ -2324,7 +2324,7 @@ function onDrop(event: DragEvent) {
 
     if (entry?.isDirectory) {
 
-      showWarning(
+      showError(
         "フォルダは添付できません",
         "ファイルを選択してください。"
       )

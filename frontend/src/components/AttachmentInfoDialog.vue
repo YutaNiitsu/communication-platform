@@ -41,13 +41,6 @@
           </tr>
 
           <tr>
-            <th>保存名</th>
-            <td>
-              {{ attachment.storedFileName }}
-            </td>
-          </tr>
-
-          <tr>
             <th>作成日時</th>
             <td>
               {{ attachment.createdAt }}
