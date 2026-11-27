@@ -38,7 +38,7 @@
       </div>
       <button
         class="preview-download-btn"
-        @click="downloadAttachment"
+        @click="downloadFile(attachment)"
         title="ダウンロード"
       >
         💾
@@ -50,11 +50,14 @@
 
 <script setup lang="ts">
 import { ref, onMounted } from "vue"
+import { useAttachmentActions } from "@/composables/useAttachmentActions"
 import * as docx from "docx-preview"
 import * as XLSX from "xlsx"
 
 const props = defineProps<{ attachment: any }>()
 const emit = defineEmits(["close"])
+
+const { downloadFile } = useAttachmentActions()
 
 const API_BASE = import.meta.env.VITE_API_BASE_URL
 
@@ -95,13 +98,13 @@ function close() {
   emit("close")
 }
 
-function downloadAttachment() {
-  const url = absoluteUrl(props.attachment.fileUrl)
-  const a = document.createElement("a")
-  a.href = url
-  a.download = props.attachment.originalFileName
-  a.click()
-}
+// function downloadAttachment() {
+//   const url = absoluteUrl(props.attachment.fileUrl)
+//   const a = document.createElement("a")
+//   a.href = url
+//   a.download = props.attachment.originalFileName
+//   a.click()
+// }
 
 </script>
 

@@ -14,13 +14,35 @@ export function downloadFile(att: Attachment) {
   link.click()
 }
 
-export function deleteFile(att: Attachment) {
-  const result = showWarning("ファイル削除", `本当に「${att.originalFileName}」を削除しますか？`)
+export async function deleteFile(
+  att: Attachment
+) {
+
+  const result =
+    await showWarning(
+      "ファイル削除",
+      `本当に「${att.originalFileName}」を削除しますか？`
+    )
+
   if (!result) {
-    messageStore.deleteAttachment(att.id).then(() => {
-      showSuccess("ファイル削除に成功しました", `「${att.originalFileName}」を削除しました。`)
-    }).catch(() => {
-      showError("ファイル削除エラー", `「${att.originalFileName}」の削除に失敗しました。`)
-    })
+    return
+  }
+
+  try {
+
+    await messageStore
+      .deleteAttachment(att.id)
+
+    await showSuccess(
+      "ファイル削除成功",
+      `「${att.originalFileName}」を削除しました。`
+    )
+
+  } catch {
+
+    await showError(
+      "ファイル削除エラー",
+      `「${att.originalFileName}」の削除に失敗しました。`
+    )
   }
 }

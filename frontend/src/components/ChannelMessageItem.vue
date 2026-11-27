@@ -126,9 +126,9 @@ import { computed } from "vue"
 import { getUserColor } from "@/utils/Color"
 import { formatTimestamp } from "@/utils/DateTime"
 import { renderFormattedContent } from "@/utils/Markdown"
-import { downloadFile, deleteFile } from "@/utils/File"
 import { useAttachmentPreview } from "@/composables/useAttachmentPreview"
 import { useAttachmentInfo } from "@/composables/useAttachmentInfo"
+import { useAttachmentActions } from "@/composables/useAttachmentActions"
 import MessageReactions from "@/components/MessageReactions.vue"
 import MessageAttachments from "@/components/MessageAttachments.vue"
 import AttachmentPreviewModal from "@/components/AttachmentPreviewModal.vue"
@@ -138,6 +138,7 @@ import "highlight.js/styles/github-dark.css"
 
 const { previewAttachment, openPreview, closePreview } = useAttachmentPreview()
 const { selectedAttachment, showInfoDialog, showInfo, close } = useAttachmentInfo()
+const { downloadFile, deleteFile } = useAttachmentActions()
 
 const props = defineProps<{
   channel: any
